@@ -1,0 +1,45 @@
+classDiagram
+    class Clima {
+        - String ciudad
+        - double temperatura
+        - double humedad
+        - double velocidadViento
+        + Clima(String, double, double, double)
+    }
+
+    class Vuelo {
+        - String numeroVuelo
+        - String aerolinea
+        - String aeropuertoSalida
+        - String aeropuertoLlegada
+        - String estado
+        + Vuelo(String, String, String, String, String)
+    }
+
+    class OpenWeatherAPI {
+        - static String API_KEY
+        - static String BASE_URL
+        - OkHttpClient client
+        - Gson gson
+        + Clima obtenerClima(String ciudad)
+    }
+
+    class AviationStackAPI {
+        - static String API_KEY
+        - static String BASE_URL
+        - OkHttpClient client
+        - Gson gson
+        + Vuelo obtenerVuelo(String numeroVuelo)
+    }
+
+    class DatabaseManager {
+        - static String URL
+        + static Connection connect()
+        + void guardarClima(Clima clima)
+        + void guardarVuelo(Vuelo vuelo)
+    }
+
+    OpenWeatherAPI --|> Clima
+    AviationStackAPI --|> Vuelo
+    DatabaseManager --> Clima
+    DatabaseManager --> Vuelo
