@@ -24,7 +24,7 @@ public class Main {
 		if (clima != null) System.out.println("🌤️ Clima: " + clima);
 		if (vuelo != null) System.out.println("✈️ Vuelo: " + vuelo);
 
-		// Guardar en base de datos
+		// Guardar en base de datos jeje
 		if (clima != null) db.guardarClima(clima);
 		if (vuelo != null) db.guardarVuelo(vuelo);
 	}
