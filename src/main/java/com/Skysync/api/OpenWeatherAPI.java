@@ -3,7 +3,7 @@ package com.Skysync.api;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.Skysync.models.Clima;
-import com.Skysync.utils.Config;
+import com.Skysync.main.Config;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

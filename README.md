@@ -1,60 +1,63 @@
-# SkySync ✈️🌦️
+# ✈️ SkySync – Sistema de análisis y predicción de vuelos en Canarias
 
-**SkySync** es una aplicación desarrollada en Java que cruza información meteorológica con datos de vuelos para analizar la posible correlación entre las condiciones climáticas y los retrasos. Utiliza APIs públicas para obtener datos en tiempo real y los almacena localmente para su posterior análisis.
+SkySync es una herramienta desarrollada en Java que permite **analizar el comportamiento de los vuelos interinsulares de Canarias** y **predecir posibles cancelaciones o retrasos** en base a las condiciones climáticas reales.
 
----
+## 🌍 ¿Qué hace SkySync?
 
-## 🚀 Funcionalidades
+✔️ Recoge **vuelos reales** desde aeropuertos de Canarias usando la API de [AviationStack](https://aviationstack.com/)  
+✔️ Obtiene el **clima actual** de cada ciudad isleña con [OpenWeatherMap](https://openweathermap.org/)  
+✔️ Almacena la información en una base de datos local SQLite  
+✔️ Genera **informes diarios** con:
+- Número de vuelos
+- Vuelos cancelados y retrasados
+- Temperatura, viento y humedad medias
 
-- 🌦️ Consulta del clima actual por ciudad (temperatura, humedad, viento)
-- ✈️ Consulta del estado de vuelos mediante código IATA (salida, llegada, estado)
-- 💾 Persistencia de datos en base de datos SQLite
-- 🔄 Captura de datos de forma periódica (modo automático)
-- 📊 Pensado para análisis estadístico de correlación entre clima y retrasos
-
----
-
-## 🛠️ Tecnologías Usadas
-
-| Herramienta      | Rol                                  |
-|------------------|---------------------------------------|
-| Java 21          | Lenguaje principal                    |
-| Maven            | Gestor de dependencias y compilación  |
-| SQLite JDBC      | Motor de base de datos local          |
-| OkHttp           | Cliente HTTP para consumo de APIs     |
-| Gson             | Parseo de respuestas JSON             |
-| IntelliJ IDEA    | Entorno de desarrollo recomendado     |
+✔️ Realiza **predicciones de probabilidad de cancelación** basadas en el clima actual
 
 ---
 
-## 📦 Estructura del Proyecto
+## 🔧 Tecnologías usadas
 
-```bash
-skysync/
-├── README.md
-├── pom.xml
-└── src/
-    └── main/
-        └── java/
-            └── com/
-                └── Skysync/
-                    ├── api/
-                    │   ├── OpenWeatherAPI.java
-                    │   └── AviationStackAPI.java
-                    ├── database/
-                    │   └── DatabaseManager.java
-                    ├── models/
-                    │   ├── Clima.java
-                    │   └── Vuelo.java
-                    ├── utils/
-                    │   └── Config.java
-                    └── Main.java
-```
+- **Java 21**
+- **SQLite** como sistema de almacenamiento
+- **AviationStack API** (vuelos reales)
+- **OpenWeather API** (clima real)
+- **OkHttp + Gson** para manejo de APIs
+- Proyecto estructurado en módulos (`core`, `api`, `models`, `database`, `main`)
 
-## 📄 Licencia
-Este proyecto está desarrollado con fines educativos. Puedes modificarlo, adaptarlo o integrarlo a tus propios desarrollos libremente.
+---
 
-## 🙌 Autores
-Raúl Mendoza Peña
-Yain Estrada
-Estudiantes del Grado en Ciencia e Ingeniería de Datos – ULPGC
+## Ejemplo de usp
+🌤️ Bienvenido a SkySync
+
+1️⃣ Recolectar vuelos actuales con AviationStack
+2️⃣ Generar informe de un día
+3️⃣ Predecir probabilidad de cancelación por clima
+4️⃣ Recolección continua de vuelos en segundo plano
+
+
+Informe diario generado:
+
+📊 Informe del día: 2025-04-08
+✈️ Total vuelos: 295
+   Retrasados: 0 | Cancelados: 1
+🌡️ Temperatura media: 20,7°C | 💨 Viento: 4,1 km/h | 💧 Humedad: 75%
+
+Predicción por clima:
+
+📍 Clima actual en Las Palmas: Clima{ciudad='Las Palmas', temperatura=22.3, humedad=74.0, velocidadViento=3.5}
+🔮 Probabilidad estimada de cancelación/retraso: 0.0%
+🧠 Futuras mejoras
+Visualización con gráficos o interfaz web
+
+Análisis de correlación entre clima y retrasos
+
+Dashboard exportable como PDF o web
+
+Soporte para vuelos de entrada y salida hacia la península
+
+## 👨‍💻 Autor
+Proyecto desarrollado por Raul Mendoza y Yain Estrada
+Universidad de las Palmas de Gran Canaria | Ciencia e Ingeniería de Datos
+Asignatura: Desarrollo de Aplicaciones en Ciencia de Datos (DACD)
+
