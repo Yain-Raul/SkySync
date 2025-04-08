@@ -27,12 +27,14 @@ public class OpenWeatherAPI {
 				JsonObject root = JsonParser.parseString(json).getAsJsonObject();
 				JsonObject main = root.getAsJsonObject("main");
 				JsonObject wind = root.getAsJsonObject("wind");
+				JsonObject weather = root.getAsJsonArray("weather").get(0).getAsJsonObject();
 
 				double temperatura = main.get("temp").getAsDouble();
 				double humedad = main.get("humidity").getAsDouble();
 				double viento = wind.get("speed").getAsDouble();
+				String condicion = weather.get("main").getAsString(); // Ej: "Rain", "Clear", etc.
 
-				return new Clima(ciudad, temperatura, humedad, viento);
+				return new Clima(ciudad, temperatura, humedad, viento, condicion);
 			} else {
 				System.out.println("❌ Error en respuesta clima: " + response.code());
 			}
