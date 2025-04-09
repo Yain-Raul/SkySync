@@ -30,18 +30,18 @@ SkySync es una herramienta desarrollada en Java que permite **analizar el compor
 ## Ejemplo de usp
 🌤️ Bienvenido a SkySync
 
-1️⃣ Recolectar vuelos actuales con AviationStack
+1️⃣ Recolectar vuelos y clima actuales con AviationStack
 2️⃣ Generar informe de un día
-3️⃣ Predecir probabilidad de cancelación por clima
+3️⃣ Predecir probabilidad de cancelación por clima. Opciones: LPA, TFN, TFS, ACE, FUE, SPC, GMZ, VDE
 4️⃣ Recolección continua de vuelos en segundo plano
 
+Elige una opción:
 
-Informe diario generado:
 
-📊 Informe del día: 2025-04-08
-✈️ Total vuelos: 295
-   Retrasados: 0 | Cancelados: 1
-🌡️ Temperatura media: 20,7°C | 💨 Viento: 4,1 km/h | 💧 Humedad: 75%
+📊 Informe del día: 2025-04-09
+✈️ Total vuelos en Canarias: 104
+Retrasados en Canarias: 0 | Cancelados: 0
+🌡️ Temperatura media en Canarias: 20,7°C | 💨 Viento: 5,5 km/h | 💧 Humedad: 67%
 
 Predicción por clima:
 
@@ -50,11 +50,14 @@ Predicción por clima:
 🧠 Futuras mejoras
 Visualización con gráficos o interfaz web
 
-Análisis de correlación entre clima y retrasos
 
-Dashboard exportable como PDF o web
+3️⃣ Predecir probabilidad de cancelación por clima. Opciones: LPA, TFN, TFS, ACE, FUE, SPC, GMZ, VDE
+Introduce el código de tu aeropuerto: LPA
+📡 Llamando a OpenWeather: https://api.openweathermap.org/data/2.5/weather?q=Las Palmas&appid=e3ab094c405a366e4715800f0ac15040&units=metric
 
-Soporte para vuelos de entrada y salida hacia la península
+📍 Aeropuerto LPA (Las Palmas)
+🌤️ Clima actual: Clima{ciudad='Las Palmas', temperatura=20,4, humedad=73,0, viento=4,6, condición='Clouds'}
+🔮 Riesgo estimado: BAJO (0,0%)
 
 ## 👨‍💻 Autor
 Proyecto desarrollado por Raul Mendoza y Yain Estrada
