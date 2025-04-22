@@ -4,7 +4,7 @@ import com.Skysync.api.OpenWeatherAPI;
 import com.Skysync.database.DatabaseManager;
 import com.Skysync.models.Clima;
 import com.Skysync.events.WeatherEvent;
-import com.Skysync.messaging.WeatherPublisher;
+import com.Skysync.messagin.WeatherPublisher;
 
 public class ClimaCollector {
 
