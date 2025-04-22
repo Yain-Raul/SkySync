@@ -1,0 +1,20 @@
+{"ts":"2025-04-22T17:24:52.473349800Z","ss":"feederA","data":{"ciudad":"Las Palmas","temperatura":21.44,"humedad":60.0,"velocidadViento":9.26,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:24:53.201320200Z","ss":"feederA","data":{"ciudad":"Santa Cruz de Tenerife","temperatura":20.37,"humedad":75.0,"velocidadViento":9.26,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:24:53.325484200Z","ss":"feederA","data":{"ciudad":"Adeje","temperatura":20.61,"humedad":56.0,"velocidadViento":8.75,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:24:53.422261400Z","ss":"feederA","data":{"ciudad":"Arrecife","temperatura":20.99,"humedad":64.0,"velocidadViento":12.86,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:24:53.514518400Z","ss":"feederA","data":{"ciudad":"Puerto del Rosario","temperatura":22.86,"humedad":60.0,"velocidadViento":9.26,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:29:41.458517700Z","ss":"feederA","data":{"ciudad":"Las Palmas","temperatura":21.44,"humedad":60.0,"velocidadViento":9.26,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:29:42.070324600Z","ss":"feederA","data":{"ciudad":"Santa Cruz de Tenerife","temperatura":20.37,"humedad":75.0,"velocidadViento":9.26,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:29:42.270404500Z","ss":"feederA","data":{"ciudad":"Adeje","temperatura":20.61,"humedad":56.0,"velocidadViento":8.75,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:29:42.475929500Z","ss":"feederA","data":{"ciudad":"Arrecife","temperatura":20.99,"humedad":64.0,"velocidadViento":12.86,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:29:42.680898Z","ss":"feederA","data":{"ciudad":"Puerto del Rosario","temperatura":22.86,"humedad":60.0,"velocidadViento":9.26,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:34:01.686118800Z","ss":"feederA","data":{"ciudad":"Las Palmas","temperatura":21.44,"humedad":60.0,"velocidadViento":9.26,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:34:01.809454500Z","ss":"feederA","data":{"ciudad":"Santa Cruz de Tenerife","temperatura":20.3,"humedad":74.0,"velocidadViento":9.26,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:34:01.906391800Z","ss":"feederA","data":{"ciudad":"Adeje","temperatura":20.64,"humedad":59.0,"velocidadViento":8.75,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:34:02.001908300Z","ss":"feederA","data":{"ciudad":"Arrecife","temperatura":20.99,"humedad":64.0,"velocidadViento":12.86,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:34:02.095066200Z","ss":"feederA","data":{"ciudad":"Puerto del Rosario","temperatura":22.86,"humedad":60.0,"velocidadViento":9.26,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:34:21.010951300Z","ss":"feederA","data":{"ciudad":"Las Palmas","temperatura":21.44,"humedad":60.0,"velocidadViento":9.26,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:34:21.217249900Z","ss":"feederA","data":{"ciudad":"Santa Cruz de Tenerife","temperatura":20.3,"humedad":74.0,"velocidadViento":9.26,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:34:21.427743600Z","ss":"feederA","data":{"ciudad":"Adeje","temperatura":20.64,"humedad":59.0,"velocidadViento":8.75,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:34:21.622453200Z","ss":"feederA","data":{"ciudad":"Arrecife","temperatura":20.99,"humedad":64.0,"velocidadViento":12.86,"condicion":"Clouds"}}
+{"ts":"2025-04-22T17:34:21.725182800Z","ss":"feederA","data":{"ciudad":"Puerto del Rosario","temperatura":22.86,"humedad":60.0,"velocidadViento":9.26,"condicion":"Clouds"}}
