@@ -1,42 +1,57 @@
 package com.Skysync.core;
 
 import com.Skysync.api.AviationStackAPI;
-import com.Skysync.database.DatabaseManager;
+import com.Skysync.api.OpenWeatherAPI;
+import com.Skysync.business.DatamartManager;
+import com.Skysync.messaging.WeatherPublisher;
+import com.Skysync.models.Clima;
 import com.Skysync.models.Vuelo;
+import com.Skysync.events.WeatherEvent;
 
-import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.List;
 
 public class BackgroundCollector {
 
 	private static final String[] AEROPUERTOS_CANARIOS = {"LPA", "TFN", "TFS", "ACE", "FUE"};
-	private static final Random rand = new Random();
 
 	public void iniciarModoLento() {
-		DatabaseManager db = new DatabaseManager();
-		AviationStackAPI api = new AviationStackAPI();
+		DatamartManager db = new DatamartManager();
+		OpenWeatherAPI apiClima = new OpenWeatherAPI();
+		AviationStackAPI apiVuelos = new AviationStackAPI();
+		WeatherPublisher publisher = new WeatherPublisher();
 
-		ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+		while (true) {
+			System.out.println("\n♻️ Recopilando vuelos y clima en segundo plano...");
 
-		Runnable tarea = () -> {
-			String aeropuerto = AEROPUERTOS_CANARIOS[rand.nextInt(AEROPUERTOS_CANARIOS.length)];
-			System.out.println("⏳ Aeropuerto aleatorio: " + aeropuerto);
-
-			List<Vuelo> vuelos = api.obtenerVuelosPorAeropuerto(aeropuerto);
-			if (vuelos.isEmpty()) {
-				System.out.println("⚠️ Sin resultados para " + aeropuerto);
-			} else {
+			// Recolectar vuelos
+			for (String aeropuerto : AEROPUERTOS_CANARIOS) {
+					List<Vuelo> vuelos = apiVuelos.obtenerVuelosPorAeropuerto(aeropuerto);
 				for (Vuelo vuelo : vuelos) {
-					db.guardarVuelo(vuelo);
+					db.insertarVuelo(vuelo);
 				}
-				System.out.println("✅ " + vuelos.size() + " vuelos guardados.");
 			}
-		};
 
-		System.out.println("🌀 Recolección en segundo plano activa (1 min por aeropuerto)");
-		scheduler.scheduleAtFixedRate(tarea, 0, 60, TimeUnit.SECONDS);
+			// Recolectar clima
+			String[] ciudades = {"Las Palmas", "Santa Cruz de Tenerife", "Adeje", "Arrecife", "Puerto del Rosario"};
+			for (String ciudad : ciudades) {
+				Clima clima = apiClima.obtenerClima(ciudad);
+				if (clima != null) {
+					db.insertarClima(clima);
+
+					// Publicar evento de clima
+					WeatherEvent evento = new WeatherEvent("feederA", clima);
+					publisher.publicar(evento);
+				}
+			}
+
+			System.out.println("✅ Recolección terminada. Esperando 1 minuto...");
+
+			try {
+				Thread.sleep(60000); // Esperar 1 minuto
+			} catch (InterruptedException e) {
+				System.out.println("❌ Error en espera:");
+				e.printStackTrace();
+			}
+		}
 	}
 }
