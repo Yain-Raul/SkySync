@@ -1,13 +1,13 @@
 package com.Skysync.business;
 
 import com.Skysync.models.Clima;
+import com.Skysync.models.Vuelo;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import com.Skysync.models.Vuelo;
 
 public class DatamartManager {
 
@@ -52,7 +52,36 @@ public class DatamartManager {
 		}
 	}
 
+	private void crearTablaVuelos() {
+		String sql = """
+            CREATE TABLE IF NOT EXISTS vuelos_datamart (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                numeroVuelo TEXT,
+                aerolinea TEXT,
+                aeropuertoSalida TEXT,
+                aeropuertoLlegada TEXT,
+                estado TEXT,
+                timestamp TEXT
+            );
+        """;
+
+		try (Connection conn = connect()) {
+			if (conn != null) {
+				conn.createStatement().execute(sql);
+				System.out.println("🧱 Tabla vuelos_datamart creada (o ya existe)");
+			}
+		} catch (SQLException e) {
+			System.out.println("❌ Error creando tabla vuelos_datamart:");
+			e.printStackTrace();
+		}
+	}
+
 	public void insertarClima(Clima clima) {
+		if (climaYaExiste(clima)) {
+			System.out.println("⚠️ Clima ya registrado hoy en: " + clima.getCiudad());
+			return;
+		}
+
 		String sql = """
             INSERT INTO clima_datamart (ciudad, temperatura, humedad, velocidadViento, condicion, timestamp)
             VALUES (?, ?, ?, ?, ?, datetime('now'));
@@ -76,106 +105,35 @@ public class DatamartManager {
 		}
 	}
 
-	public void mostrarResumenClimaPorCiudad() {
+	private boolean climaYaExiste(Clima clima) {
 		String sql = """
-            SELECT ciudad,
-                   AVG(temperatura) AS temp_media,
-                   AVG(humedad) AS humedad_media,
-                   AVG(velocidadViento) AS viento_medio
-            FROM clima_datamart
-            GROUP BY ciudad
-            ORDER BY ciudad;
+            SELECT COUNT(*) FROM clima_datamart
+            WHERE ciudad = ? AND DATE(timestamp) = DATE('now');
         """;
 
 		try (Connection conn = connect();
-			 PreparedStatement stmt = conn.prepareStatement(sql);
-			 ResultSet rs = stmt.executeQuery()) {
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-			System.out.println("\n📊 Resumen de clima promedio por ciudad:");
-			while (rs.next()) {
-				String ciudad = rs.getString("ciudad");
-				double tempMedia = rs.getDouble("temp_media");
-				double humedadMedia = rs.getDouble("humedad_media");
-				double vientoMedio = rs.getDouble("viento_medio");
-
-				System.out.printf("- %s → 🌡️ %.1f°C, 💧 %.0f%%, 💨 %.1f km/h%n",
-						ciudad, tempMedia, humedadMedia, vientoMedio);
-			}
+			stmt.setString(1, clima.getCiudad());
+			ResultSet rs = stmt.executeQuery();
+			return rs.next() && rs.getInt(1) > 0;
 
 		} catch (SQLException e) {
-			System.out.println("❌ Error consultando clima promedio:");
 			e.printStackTrace();
 		}
-	}
-
-	public void detectarCondicionesExtremas() {
-		String sql = """
-            SELECT ciudad, temperatura, humedad, velocidadViento, condicion, timestamp
-            FROM clima_datamart
-            WHERE velocidadViento > 30
-               OR humedad > 90;
-        """;
-
-		try (Connection conn = connect();
-			 PreparedStatement stmt = conn.prepareStatement(sql);
-			 ResultSet rs = stmt.executeQuery()) {
-
-			System.out.println("\n🚨 Condiciones extremas detectadas:");
-
-			boolean hayAlertas = false;
-
-			while (rs.next()) {
-				hayAlertas = true;
-				String ciudad = rs.getString("ciudad");
-				double temp = rs.getDouble("temperatura");
-				double humedad = rs.getDouble("humedad");
-				double viento = rs.getDouble("velocidadViento");
-				String condicion = rs.getString("condicion");
-				String timestamp = rs.getString("timestamp");
-
-				System.out.printf("- %s [%s] → 🌡️ %.1f°C, 💧 %.0f%%, 💨 %.1f km/h, ☁️ %s%n",
-						ciudad, timestamp, temp, humedad, viento, condicion);
-			}
-
-			if (!hayAlertas) {
-				System.out.println("✅ No se detectaron condiciones extremas en los registros actuales.");
-			}
-
-		} catch (SQLException e) {
-			System.out.println("❌ Error detectando condiciones extremas:");
-			e.printStackTrace();
-		}
-	}
-
-	private void crearTablaVuelos() {
-		String sql = """
-        CREATE TABLE IF NOT EXISTS vuelos_datamart (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            numeroVuelo TEXT,
-            aerolinea TEXT,
-            aeropuertoSalida TEXT,
-            aeropuertoLlegada TEXT,
-            estado TEXT,
-            timestamp TEXT
-        );
-    """;
-
-		try (Connection conn = connect()) {
-			if (conn != null) {
-				conn.createStatement().execute(sql);
-				System.out.println("🧱 Tabla vuelos_datamart creada (o ya existe)");
-			}
-		} catch (SQLException e) {
-			System.out.println("❌ Error creando tabla vuelos_datamart:");
-			e.printStackTrace();
-		}
+		return false;
 	}
 
 	public void insertarVuelo(Vuelo vuelo) {
+		if (vueloYaExiste(vuelo)) {
+			System.out.println("⚠️ Vuelo ya registrado hoy: " + vuelo.getNumeroVuelo());
+			return;
+		}
+
 		String sql = """
-        INSERT INTO vuelos_datamart (numeroVuelo, aerolinea, aeropuertoSalida, aeropuertoLlegada, estado, timestamp)
-        VALUES (?, ?, ?, ?, ?, datetime('now'));
-    """;
+            INSERT INTO vuelos_datamart (numeroVuelo, aerolinea, aeropuertoSalida, aeropuertoLlegada, estado, timestamp)
+            VALUES (?, ?, ?, ?, ?, datetime('now'));
+        """;
 
 		try (Connection conn = connect();
 			 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -193,6 +151,26 @@ public class DatamartManager {
 			System.out.println("❌ Error insertando vuelo:");
 			e.printStackTrace();
 		}
+	}
+
+	private boolean vueloYaExiste(Vuelo vuelo) {
+		String sql = """
+            SELECT COUNT(*) FROM vuelos_datamart
+            WHERE numeroVuelo = ? AND estado = ? AND DATE(timestamp) = DATE('now');
+        """;
+
+		try (Connection conn = connect();
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+			stmt.setString(1, vuelo.getNumeroVuelo());
+			stmt.setString(2, vuelo.getEstado());
+			ResultSet rs = stmt.executeQuery();
+			return rs.next() && rs.getInt(1) > 0;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	public void mostrarEstadoVuelos() {

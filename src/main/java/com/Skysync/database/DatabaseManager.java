@@ -6,7 +6,7 @@ import com.Skysync.models.Vuelo;
 import java.sql.*;
 
 public class DatabaseManager {
-	private static final String URL = "jdbc:sqlite:clima_vuelos.db";
+	private static final String URL = "jdbc:sqlite:datamart.db";
 
 	public void crearTablas() {
 		String sqlClima = """

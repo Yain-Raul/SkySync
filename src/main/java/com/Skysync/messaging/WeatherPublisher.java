@@ -1,4 +1,4 @@
-package com.Skysync.messagin;
+package com.Skysync.messaging;
 
 import com.Skysync.events.WeatherEvent;
 import com.Skysync.main.Config;

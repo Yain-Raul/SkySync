@@ -1,66 +1,105 @@
-# ✈️ SkySync – Sistema de análisis y predicción de vuelos en Canarias
+# ✈️ SkySync – Análisis y Predicción de Vuelos y Clima en Canarias
 
-SkySync es una herramienta desarrollada en Java que permite **analizar el comportamiento de los vuelos interinsulares de Canarias** y **predecir posibles cancelaciones o retrasos** en base a las condiciones climáticas reales.
-
-## 🌍 ¿Qué hace SkySync?
-
-✔️ Recoge **vuelos reales** desde aeropuertos de Canarias usando la API de [AviationStack](https://aviationstack.com/)  
-✔️ Obtiene el **clima actual** de cada ciudad isleña con [OpenWeatherMap](https://openweathermap.org/)  
-✔️ Almacena la información en una base de datos local SQLite  
-✔️ Genera **informes diarios** con:
-- Número de vuelos
-- Vuelos cancelados y retrasados
-- Temperatura, viento y humedad medias
-
-✔️ Realiza **predicciones de probabilidad de cancelación** basadas en el clima actual
+SkySync es un sistema de análisis orientado a eventos que permite:
+- Recolectar información real de vuelos y clima en las Islas Canarias.
+- Analizar estados de vuelos (retrasos, cancelaciones) y condiciones climáticas.
+- Detectar condiciones meteorológicas extremas y alertas combinadas.
+- Trabajar tanto en **tiempo real** como con **eventos históricos** almacenados.
 
 ---
 
-## 🔧 Tecnologías usadas
-
+## 📚 Tecnologías utilizadas
 - **Java 21**
-- **SQLite** como sistema de almacenamiento
-- **AviationStack API** (vuelos reales)
-- **OpenWeather API** (clima real)
-- **OkHttp + Gson** para manejo de APIs
-- Proyecto estructurado en módulos (`core`, `api`, `models`, `database`, `main`)
+- **ActiveMQ** como broker de eventos
+- **SQLite** como base de datos (`datamart.db`)
+- **AviationStack API** para información de vuelos
+- **OpenWeatherMap API** para datos meteorológicos
+- **Gson** y **OkHttp** para consumo de APIs REST
+- **Arquitectura orientada a eventos (Publisher/Subscriber)**
 
 ---
 
-## Ejemplo de usp
-🌤️ Bienvenido a SkySync
+## 🔥 Funcionalidades principales
 
-1️⃣ Recolectar vuelos y clima actuales con AviationStack
-2️⃣ Generar informe de un día
-3️⃣ Predecir probabilidad de cancelación por clima. Opciones: LPA, TFN, TFS, ACE, FUE, SPC, GMZ, VDE
-4️⃣ Recolección continua de vuelos en segundo plano
+| Funcionalidad | Descripción |
+|:---|:---|
+| 1️⃣ Recolectar vuelos y clima actuales con APIs |
+| 2️⃣ Generar informe de un día sobre vuelos y clima |
+| 3️⃣ Predecir probabilidad de cancelación por clima actual |
+| 4️⃣ Recolección continua de vuelos en segundo plano |
+| 5️⃣ Iniciar EventStoreBuilder para almacenar eventos en archivos `.events` |
+| 6️⃣ Iniciar BusinessUnit para análisis de clima y vuelos en tiempo real |
+| 7️⃣ Ver resumen de clima promedio por ciudad |
+| 8️⃣ Detectar condiciones meteorológicas extremas |
+| 9️⃣ Ver estado de vuelos (retrasados y cancelados) |
+| 🔟 Cargar eventos históricos en el datamart |
+| 1️⃣1️⃣ Detectar alerta combinada clima + vuelos |
 
-Elige una opción:
+---
+
+## 📂 Estructura de carpetas
+
+```
+SkySync/
+├── src/com/Skysync/
+│   ├── api/               # Consumo de APIs OpenWeather y AviationStack
+│   ├── business/           # BusinessUnit, DatamartManager (análisis de eventos)
+│   ├── core/               # Collectors de datos y lógica principal
+│   ├── events/             # Modelos de eventos
+│   ├── messaging/          # Publisher de eventos a ActiveMQ
+│   ├── models/             # Clases Clima y Vuelo
+│   ├── store/              # EventStoreBuilder (almacenamiento de eventos)
+│   └── main/               # Clase principal SkySync
+├── eventstore/             # Archivos históricos `.events`
+├── datamart.db             # Base de datos SQLite unificada
+└── README.md               # Este documento
+```
+
+---
+
+## 🛠️ Cómo ejecutar el proyecto
+
+1. Instalar y arrancar ActiveMQ en localhost (`activemq.bat start` o `./activemq start`).
+2. Ejecutar `SkySync.java` desde IntelliJ IDEA o terminal.
+3. Utilizar el menú interactivo para realizar las acciones deseadas.
+
+---
+
+## 🧪 Ejemplo de eventos generados
+
+```json
+// Evento de clima (WeatherEvent)
+{
+  "ts": "2025-04-28T15:00:00Z",
+  "ss": "feederA",
+  "data": {
+    "ciudad": "Las Palmas",
+    "temperatura": 21.4,
+    "humedad": 60.0,
+    "velocidadViento": 12.5,
+    "condicion": "Rain"
+  }
+}
+
+// Evento de vuelo (Vuelo)
+{
+  "numeroVuelo": "IB1234",
+  "aerolinea": "Iberia",
+  "aeropuertoSalida": "Gran Canaria Airport",
+  "aeropuertoSalidaIATA": "LPA",
+  "aeropuertoLlegada": "Tenerife North",
+  "estado": "delayed"
+}
+```
+
+---
 
 
-📊 Informe del día: 2025-04-09
-✈️ Total vuelos en Canarias: 104
-Retrasados en Canarias: 0 | Cancelados: 0
-🌡️ Temperatura media en Canarias: 20,7°C | 💨 Viento: 5,5 km/h | 💧 Humedad: 67%
-
-Predicción por clima:
-
-📍 Clima actual en Las Palmas: Clima{ciudad='Las Palmas', temperatura=22.3, humedad=74.0, velocidadViento=3.5}
-🔮 Probabilidad estimada de cancelación/retraso: 0.0%
-🧠 Futuras mejoras
-Visualización con gráficos o interfaz web
 
 
-3️⃣ Predecir probabilidad de cancelación por clima. Opciones: LPA, TFN, TFS, ACE, FUE, SPC, GMZ, VDE
-Introduce el código de tu aeropuerto: LPA
-📡 Llamando a OpenWeather: https://api.openweathermap.org/data/2.5/weather?q=Las Palmas&appid=e3ab094c405a366e4715800f0ac15040&units=metric
+## 👨‍💻 Autores
 
-📍 Aeropuerto LPA (Las Palmas)
-🌤️ Clima actual: Clima{ciudad='Las Palmas', temperatura=20,4, humedad=73,0, viento=4,6, condición='Clouds'}
-🔮 Riesgo estimado: BAJO (0,0%)
-
-## 👨‍💻 Autor
-Proyecto desarrollado por Raul Mendoza y Yain Estrada
-Universidad de las Palmas de Gran Canaria | Ciencia e Ingeniería de Datos
+Proyecto desarrollado por Raúl Mendoza Peña y Yain Estrada Domínguez  
+Universidad de Las Palmas de Gran Canaria – Ciencia e Ingeniería de Datos  
 Asignatura: Desarrollo de Aplicaciones en Ciencia de Datos (DACD)
 
