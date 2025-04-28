@@ -254,6 +254,77 @@ public class DatamartManager {
 		return 0;
 	}
 
+	public void mostrarResumenClimaPorCiudad() {
+		String sql = """
+        SELECT ciudad,
+               AVG(temperatura) AS temp_media,
+               AVG(humedad) AS humedad_media,
+               AVG(velocidadViento) AS viento_medio
+        FROM clima_datamart
+        GROUP BY ciudad
+        ORDER BY ciudad;
+    """;
+
+		try (Connection conn = connect();
+			 PreparedStatement stmt = conn.prepareStatement(sql);
+			 ResultSet rs = stmt.executeQuery()) {
+
+			System.out.println("\n📊 Resumen de clima promedio por ciudad:");
+			while (rs.next()) {
+				String ciudad = rs.getString("ciudad");
+				double tempMedia = rs.getDouble("temp_media");
+				double humedadMedia = rs.getDouble("humedad_media");
+				double vientoMedio = rs.getDouble("viento_medio");
+
+				System.out.printf("- %s → 🌡️ %.1f°C, 💧 %.0f%%, 💨 %.1f km/h%n",
+						ciudad, tempMedia, humedadMedia, vientoMedio);
+			}
+
+		} catch (SQLException e) {
+			System.out.println("❌ Error consultando clima promedio:");
+			e.printStackTrace();
+		}
+	}
+	public void detectarCondicionesExtremas() {
+		String sql = """
+        SELECT ciudad, temperatura, humedad, velocidadViento, condicion, timestamp
+        FROM clima_datamart
+        WHERE velocidadViento > 30
+           OR humedad > 90;
+    """;
+
+		try (Connection conn = connect();
+			 PreparedStatement stmt = conn.prepareStatement(sql);
+			 ResultSet rs = stmt.executeQuery()) {
+
+			System.out.println("\n🚨 Condiciones extremas detectadas:");
+
+			boolean hayAlertas = false;
+
+			while (rs.next()) {
+				hayAlertas = true;
+				String ciudad = rs.getString("ciudad");
+				double temp = rs.getDouble("temperatura");
+				double humedad = rs.getDouble("humedad");
+				double viento = rs.getDouble("velocidadViento");
+				String condicion = rs.getString("condicion");
+				String timestamp = rs.getString("timestamp");
+
+				System.out.printf("- %s [%s] → 🌡️ %.1f°C, 💧 %.0f%%, 💨 %.1f km/h, ☁️ %s%n",
+						ciudad, timestamp, temp, humedad, viento, condicion);
+			}
+
+			if (!hayAlertas) {
+				System.out.println("✅ No se detectaron condiciones extremas en los registros actuales.");
+			}
+
+		} catch (SQLException e) {
+			System.out.println("❌ Error detectando condiciones extremas:");
+			e.printStackTrace();
+		}
+	}
+
+
 
 
 }
