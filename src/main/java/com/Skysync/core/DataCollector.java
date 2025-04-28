@@ -1,7 +1,7 @@
 package com.Skysync.core;
 
 import com.Skysync.api.AviationStackAPI;
-import com.Skysync.database.DatabaseManager;
+import com.Skysync.business.DatamartManager; // ✅ Usamos DatamartManager ahora
 import com.Skysync.models.Vuelo;
 
 import java.util.List;
@@ -11,7 +11,7 @@ public class DataCollector {
 	private static final String[] AEROPUERTOS_CANARIOS = {"LPA", "TFN", "TFS", "ACE", "FUE"};
 
 	public void recolectarVuelosPorAeropuerto() {
-		DatabaseManager db = new DatabaseManager();
+		DatamartManager db = new DatamartManager(); // ✅ Cambio aquí
 		AviationStackAPI api = new AviationStackAPI();
 
 		for (String aeropuerto : AEROPUERTOS_CANARIOS) {
@@ -22,7 +22,7 @@ public class DataCollector {
 				System.out.println("⚠️ No se encontraron vuelos.");
 			} else {
 				for (Vuelo vuelo : vuelos) {
-					db.guardarVuelo(vuelo);
+					db.insertarVuelo(vuelo); // ✅ Cambio aquí
 				}
 				System.out.println("✅ Se guardaron " + vuelos.size() + " vuelos.");
 			}

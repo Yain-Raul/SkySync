@@ -1,7 +1,7 @@
 package com.Skysync.core;
 
 import com.Skysync.api.OpenWeatherAPI;
-import com.Skysync.database.DatabaseManager;
+import com.Skysync.business.DatamartManager;
 import com.Skysync.models.Clima;
 import com.Skysync.events.WeatherEvent;
 import com.Skysync.messaging.WeatherPublisher;
@@ -18,13 +18,13 @@ public class ClimaCollector {
 
 	public void recolectarClimaActual() {
 		OpenWeatherAPI api = new OpenWeatherAPI();
-		DatabaseManager db = new DatabaseManager();
+		DatamartManager db = new DatamartManager(); // ✅ Cambio aquí
 		WeatherPublisher publisher = new WeatherPublisher();
 
 		for (String ciudad : CIUDADES) {
 			Clima clima = api.obtenerClima(ciudad);
 			if (clima != null) {
-				db.guardarClima(clima);
+				db.insertarClima(clima); // ✅ Cambio aquí
 				System.out.println("✅ Clima guardado: " + clima);
 
 				// Publicar evento en ActiveMQ
