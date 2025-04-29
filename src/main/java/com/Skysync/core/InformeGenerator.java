@@ -12,7 +12,7 @@ import java.util.List;
 
 public class InformeGenerator {
 
-	private static final String DB_URL = "jdbc:sqlite:datamart.db"; // ✅ Conectamos siempre a datamart.db
+	private static final String DB_URL = "jdbc:sqlite:datamart.db";
 
 	public void generarResumenDelDia(String fecha) {
 		List<Vuelo> vuelos = obtenerVuelos(fecha);

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class DataCollector {
 
-	private static final String[] AEROPUERTOS_CANARIOS = {"LPA", "TFN", "TFS", "ACE", "FUE"};
+	private static final String[] AEROPUERTOS_CANARIOS = {"LPA", "TFN", "TFS", "ACE", "FUE", "GMZ", "SPC", "VDE"};
 
 	public void recolectarVuelosPorAeropuerto() {
 		DatamartManager db = new DatamartManager(); // ✅ Cambio aquí

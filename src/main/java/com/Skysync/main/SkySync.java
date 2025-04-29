@@ -28,7 +28,7 @@ public class SkySync {
 
 			switch (opcion) {
 				case 1 -> {
-					System.out.println("\n📥 Recolectando vuelos y clima actuales...");
+					System.out.println("\n📥 Recolectando vuelos y clima actuales en Canarias...");
 					new DataCollector().recolectarVuelosPorAeropuerto();
 					new ClimaCollector().recolectarClimaActual();
 				}
@@ -38,7 +38,7 @@ public class SkySync {
 					new InformeGenerator().generarResumenDelDia(fecha);
 				}
 				case 3 -> {
-					System.out.print("\n🔎 Introduce el código de tu aeropuerto (LPA, TFN, TFS, ACE, FUE, etc.): ");
+					System.out.print("\n🔎 Introduce el código de tu aeropuerto (LPA, TFN, TFS, ACE, FUE, GMZ, SPC, VDE): ");
 					String ciudad = scanner.nextLine();
 					new PredictiveEngine().predecir(ciudad);
 				}

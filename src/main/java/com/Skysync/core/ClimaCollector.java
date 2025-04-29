@@ -9,22 +9,25 @@ import com.Skysync.messaging.WeatherPublisher;
 public class ClimaCollector {
 
 	private static final String[] CIUDADES = {
-			"Las Palmas",
-			"Santa Cruz de Tenerife",
-			"Adeje",
+			"Telde",
+			"San Cristobal de la Laguna",
+			"Granadilla de Abona",
 			"Arrecife",
-			"Puerto del Rosario"
+			"Puerto del Rosario",
+			"Santa Cruz de la Palma",
+			"Valverde",
+			"Playa de Santiago"
 	};
 
 	public void recolectarClimaActual() {
 		OpenWeatherAPI api = new OpenWeatherAPI();
-		DatamartManager db = new DatamartManager(); // ✅ Cambio aquí
+		DatamartManager db = new DatamartManager();
 		WeatherPublisher publisher = new WeatherPublisher();
 
 		for (String ciudad : CIUDADES) {
 			Clima clima = api.obtenerClima(ciudad);
 			if (clima != null) {
-				db.insertarClima(clima); // ✅ Cambio aquí
+				db.insertarClima(clima); //
 				System.out.println("✅ Clima guardado: " + clima);
 
 				// Publicar evento en ActiveMQ

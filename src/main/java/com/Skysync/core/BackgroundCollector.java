@@ -12,7 +12,7 @@ import java.util.List;
 
 public class BackgroundCollector {
 
-	private static final String[] AEROPUERTOS_CANARIOS = {"LPA", "TFN", "TFS", "ACE", "FUE"};
+	private static final String[] AEROPUERTOS_CANARIOS = {"LPA", "TFN", "TFS", "ACE", "FUE", "GMZ", "SPC", "VDE"};
 
 	public void iniciarModoLento() {
 		DatamartManager db = new DatamartManager();
@@ -32,7 +32,14 @@ public class BackgroundCollector {
 			}
 
 			// Recolectar clima
-			String[] ciudades = {"Las Palmas", "Santa Cruz de Tenerife", "Adeje", "Arrecife", "Puerto del Rosario"};
+			String[] ciudades = {"Telde",
+					"San Cristobal de la Laguna",
+					"Granadilla de Abona",
+					"Arrecife",
+					"Puerto del Rosario",
+					"Santa Cruz de la Palma",
+					"Valverde",
+					"Playa de Santiago"};
 			for (String ciudad : ciudades) {
 				Clima clima = apiClima.obtenerClima(ciudad);
 				if (clima != null) {
