@@ -188,6 +188,114 @@ public class BusinessUnit implements MessageListener {
 		datamartManager.mostrarEstadoVuelos();
 	}
 
+	public String resumenComoTexto() {
+		StringBuilder sb = new StringBuilder();
+		String sql = """
+        SELECT ciudad,
+               AVG(temperatura) AS temp_media,
+               AVG(humedad) AS humedad_media,
+               AVG(velocidadViento) AS viento_medio
+        FROM clima_datamart
+        GROUP BY ciudad
+        ORDER BY ciudad;
+    """;
+
+		try (var conn = datamartManager.connect();
+			 var stmt = conn.prepareStatement(sql);
+			 var rs = stmt.executeQuery()) {
+
+			sb.append("📊 Resumen de Clima Promedio:\n");
+			while (rs.next()) {
+				sb.append(String.format("- %s → 🌡️ %.1f°C, 💧 %.0f%%, 💨 %.1f km/h\n",
+						rs.getString("ciudad"),
+						rs.getDouble("temp_media"),
+						rs.getDouble("humedad_media"),
+						rs.getDouble("viento_medio")));
+			}
+		} catch (Exception e) {
+			return "❌ Error consultando clima promedio.";
+		}
+		return sb.toString();
+	}
+
+	public String estadoVuelosComoTexto() {
+		StringBuilder sb = new StringBuilder();
+		String sqlRetrasados = """
+        SELECT COUNT(*) AS total
+        FROM vuelos_datamart
+        WHERE estado LIKE '%delay%';
+    """;
+
+		String sqlCancelados = """
+        SELECT COUNT(*) AS total
+        FROM vuelos_datamart
+        WHERE estado LIKE '%cancel%';
+    """;
+
+		try (var conn = datamartManager.connect()) {
+			var stmtDelay = conn.prepareStatement(sqlRetrasados);
+			var stmtCancel = conn.prepareStatement(sqlCancelados);
+
+			var rsDelay = stmtDelay.executeQuery();
+			var rsCancel = stmtCancel.executeQuery();
+
+			int totalDelays = rsDelay.next() ? rsDelay.getInt("total") : 0;
+			int totalCanceled = rsCancel.next() ? rsCancel.getInt("total") : 0;
+
+			sb.append("🛬 Estado actual de vuelos:\n");
+			sb.append("- ✈️ Vuelos retrasados: ").append(totalDelays).append("\n");
+			sb.append("- 🛑 Vuelos cancelados: ").append(totalCanceled).append("\n");
+
+		} catch (Exception e) {
+			return "❌ Error consultando estado de vuelos.";
+		}
+		return sb.toString();
+	}
+
+	public String condicionesExtremasComoTexto() {
+		StringBuilder sb = new StringBuilder();
+		String sql = """
+        SELECT ciudad, temperatura, humedad, velocidadViento, condicion
+        FROM clima_datamart
+        WHERE velocidadViento > 30
+           OR humedad > 90;
+    """;
+
+		try (var conn = datamartManager.connect();
+			 var stmt = conn.prepareStatement(sql);
+			 var rs = stmt.executeQuery()) {
+
+			boolean encontrado = false;
+			sb.append("🌩️ Condiciones Meteorológicas Extremas:\n");
+			while (rs.next()) {
+				encontrado = true;
+				sb.append(String.format("- %s → 🌡️ %.1f°C, 💧 %.0f%%, 💨 %.1f km/h, ☁️ %s\n",
+						rs.getString("ciudad"),
+						rs.getDouble("temperatura"),
+						rs.getDouble("humedad"),
+						rs.getDouble("velocidadViento"),
+						rs.getString("condicion")));
+			}
+			if (!encontrado) {
+				return "✅ No se detectaron condiciones extremas.";
+			}
+		} catch (Exception e) {
+			return "❌ Error consultando condiciones extremas.";
+		}
+		return sb.toString();
+	}
+
+	public String alertaCombinadaComoTexto() {
+		int climasExtremos = datamartManager.contarClimasExtremos();
+		int vuelosRetrasados = datamartManager.contarVuelosRetrasadosActuales();
+
+		if (climasExtremos > 0 && vuelosRetrasados > 3) {
+			return String.format("🚨 ALERTA: %d climas extremos y %d vuelos retrasados detectados.\nRiesgo elevado de congestión aérea.", climasExtremos, vuelosRetrasados);
+		} else {
+			return "✅ No se detectan riesgos combinados importantes en este momento.";
+		}
+	}
+
 
 
 

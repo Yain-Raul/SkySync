@@ -18,7 +18,7 @@ public class DatamartManager {
 		crearTablaVuelos();
 	}
 
-	private Connection connect() {
+	public Connection connect() {
 		try {
 			return DriverManager.getConnection(DB_URL);
 		} catch (SQLException e) {

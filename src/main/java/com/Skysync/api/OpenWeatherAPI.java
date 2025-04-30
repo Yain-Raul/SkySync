@@ -7,6 +7,8 @@ import com.Skysync.main.Config;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import java.util.Map;
+
 
 public class OpenWeatherAPI {
 	private static final String API_KEY = Config.OPENWEATHER_API_KEY;
@@ -32,7 +34,7 @@ public class OpenWeatherAPI {
 				double temperatura = main.get("temp").getAsDouble();
 				double humedad = main.get("humidity").getAsDouble();
 				double viento = wind.get("speed").getAsDouble();
-				String condicion = weather.get("main").getAsString(); // Ej: "Rain", "Clear", etc.
+				String condicion = weather.get("main").getAsString();
 
 				return new Clima(ciudad, temperatura, humedad, viento, condicion);
 			} else {
@@ -45,4 +47,25 @@ public class OpenWeatherAPI {
 
 		return null;
 	}
+
+	public Clima obtenerClimaPorCodigo(String codigoIATA) {
+		// Aquí puedes usar un mapa simple para traducir código IATA → ciudad real
+		Map<String, String> mapaCiudades = Map.of(
+				"LPA", "Las Palmas",
+				"TFN", "Santa Cruz de Tenerife",
+				"TFS", "Adeje",
+				"ACE", "Arrecife",
+				"FUE", "Puerto del Rosario"
+		);
+
+		String ciudad = mapaCiudades.getOrDefault(codigoIATA.toUpperCase(), null);
+
+		if (ciudad == null) {
+			System.out.println("❌ Código IATA no reconocido: " + codigoIATA);
+			return null;
+		}
+
+		return obtenerClima(ciudad); // método ya existente que pide clima por nombre de ciudad
+	}
+
 }

@@ -99,4 +99,30 @@ public class InformeGenerator {
 
 		return climas;
 	}
+
+	public String generarResumenComoTexto(String fecha) {
+		StringBuilder sb = new StringBuilder();
+		List<Vuelo> vuelos = obtenerVuelos(fecha);
+		List<Clima> climas = obtenerClimas(fecha);
+
+		sb.append("📅 Informe del día: ").append(fecha).append("\n");
+
+		int total = vuelos.size();
+		int retrasados = (int) vuelos.stream().filter(v -> v.getEstado().toLowerCase().contains("delay")).count();
+		int cancelados = (int) vuelos.stream().filter(v -> v.getEstado().toLowerCase().contains("cancel")).count();
+
+		sb.append("✈️ Total vuelos: ").append(total)
+				.append(" | Retrasados: ").append(retrasados)
+				.append(" | Cancelados: ").append(cancelados).append("\n");
+
+		double temp = climas.stream().mapToDouble(Clima::getTemperatura).average().orElse(0.0);
+		double viento = climas.stream().mapToDouble(Clima::getVelocidadViento).average().orElse(0.0);
+		double humedad = climas.stream().mapToDouble(Clima::getHumedad).average().orElse(0.0);
+
+		sb.append("🌡️ Temp media: ").append(String.format("%.1f", temp)).append("°C | ")
+				.append("💨 Viento medio: ").append(String.format("%.1f", viento)).append(" km/h | ")
+				.append("💧 Humedad media: ").append(String.format("%.0f", humedad)).append("%");
+
+		return sb.toString();
+	}
 }

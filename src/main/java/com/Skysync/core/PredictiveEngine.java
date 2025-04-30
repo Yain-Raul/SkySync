@@ -105,4 +105,20 @@ public class PredictiveEngine {
 			this.motivo = motivo;
 		}
 	}
+
+	public String predecirComoTexto(String codigo) {
+		Clima clima = new OpenWeatherAPI().obtenerClimaPorCodigo(codigo);
+
+		if (clima == null) {
+			return "⚠️ No se pudo obtener el clima para " + codigo;
+		}
+
+		double riesgo = 0.0;
+		if (clima.getCondicion().toLowerCase().contains("rain")) riesgo += 30;
+		if (clima.getVelocidadViento() > 25) riesgo += 30;
+		if (clima.getHumedad() > 90) riesgo += 20;
+
+		return String.format("📍 Aeropuerto %s\n🌤️ Clima actual: %s\n🔮 Riesgo estimado de cancelación: %.1f%%",
+				codigo, clima.toString(), riesgo);
+	}
 }
