@@ -1,6 +1,6 @@
-package com.Skysync.core;
+package com.Skysync.feeders.flights;
 
-import com.Skysync.api.AviationStackAPI;
+import com.Skysync.feeders.flights.AviationStackAPI;
 import com.Skysync.business.DatamartManager; // ✅ Usamos DatamartManager ahora
 import com.Skysync.models.Vuelo;
 

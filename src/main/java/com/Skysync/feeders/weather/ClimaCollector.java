@@ -1,10 +1,10 @@
-package com.Skysync.core;
+package com.Skysync.feeders.weather;
 
-import com.Skysync.api.OpenWeatherAPI;
+import com.Skysync.feeders.weather.OpenWeatherAPI;
 import com.Skysync.business.DatamartManager;
 import com.Skysync.models.Clima;
 import com.Skysync.events.WeatherEvent;
-import com.Skysync.messaging.WeatherPublisher;
+import com.Skysync.feeders.weather.WeatherPublisher;
 
 public class ClimaCollector {
 

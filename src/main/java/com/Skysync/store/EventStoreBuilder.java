@@ -1,9 +1,8 @@
 package com.Skysync.store;
 
 import com.Skysync.events.WeatherEvent;
-import com.Skysync.main.Config;
+import com.Skysync.config.AppConfig;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
 import javax.jms.*;
@@ -11,14 +10,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+
+import com.Skysync.events.FlightEvent;
 
 public class EventStoreBuilder implements MessageListener {
 
-	private static final String BROKER_URL = Config.BROKER_URL;
-	private static final String TOPIC_NAME = Config.WEATHER_TOPIC;
-	private static final String SOURCE = Config.WEATHER_SOURCE;
+	String BROKER_URL = AppConfig.get("BROKER_URL");
+	String WEATHER_TOPIC = AppConfig.get("WEATHER_TOPIC");
+	private static final String SOURCE =  AppConfig.get("WEATHER_SOURCE");
 	private static final String EVENTSTORE_DIR = "eventstore";
 	private final Gson gson = new Gson();
 
@@ -30,50 +29,65 @@ public class EventStoreBuilder implements MessageListener {
 			connection.start();
 
 			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-			Topic topic = session.createTopic(TOPIC_NAME);
-			MessageConsumer consumer = session.createDurableSubscriber(topic, "DurableWeatherSubscriber");
 
-			consumer.setMessageListener(this);
+			Topic weatherTopic = session.createTopic(WEATHER_TOPIC);
+			Topic flightTopic = session.createTopic("prediction.Flight");
 
-			System.out.println("📥 EventStoreBuilder escuchando eventos...");
+			MessageConsumer consumerWeather = session.createDurableSubscriber(weatherTopic, "DurableWeatherSubscriber");
+			MessageConsumer consumerFlight = session.createDurableSubscriber(flightTopic, "DurableFlightSubscriber");
+
+			consumerWeather.setMessageListener(this);
+			consumerFlight.setMessageListener(this);
+
+			System.out.println("📥 EventStoreBuilder escuchando eventos de clima y vuelos...");
 
 			synchronized (this) {
 				this.wait();
 			}
 		} catch (Exception e) {
 			System.out.println("❌ No se pudo conectar al broker: " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
+
 
 	@Override
 	public void onMessage(Message message) {
 		if (message instanceof TextMessage) {
 			try {
 				String json = ((TextMessage) message).getText();
-				WeatherEvent evento = gson.fromJson(json, WeatherEvent.class);
 
-				guardarEvento(evento);
-				System.out.println("✅ Evento guardado: " + json);
+				if (json.contains("temperatura") && json.contains("humedad")) {
+					WeatherEvent evento = gson.fromJson(json, WeatherEvent.class);
+					guardarEvento("prediction.Weather", evento.getSs(), evento.getTs(), json);
+					System.out.println("✅ Evento de clima guardado.");
+				} else if (json.contains("numeroVuelo") && json.contains("estado")) {
+					FlightEvent evento = gson.fromJson(json, FlightEvent.class);
+					guardarEvento("prediction.Flight", evento.getSs(), evento.getTs(), json);
+					System.out.println("✅ Evento de vuelo guardado.");
+				} else {
+					System.out.println("⚠️ Tipo de evento no reconocido.");
+				}
 
-			} catch (JMSException | JsonSyntaxException e) {
+			} catch (Exception e) {
 				System.out.println("⚠️ Error procesando evento:");
 				e.printStackTrace();
 			}
 		}
 	}
 
-	private void guardarEvento(WeatherEvent evento) {
-		try {
-			LocalDate fecha = LocalDate.parse(evento.getTs().substring(0, 10));
-			String fechaStr = fecha.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
-			String ruta = Paths.get(EVENTSTORE_DIR, TOPIC_NAME, evento.getSs()).toString();
+	private void guardarEvento(String topic, String ss, String timestamp, String json) {
+		try {
+			String fechaStr = timestamp.substring(0, 10).replace("-", "");
+			String ruta = Paths.get(EVENTSTORE_DIR, topic, ss).toString();
+
 			File directorio = new File(ruta);
 			if (!directorio.exists()) directorio.mkdirs();
 
 			File archivo = new File(directorio, fechaStr + ".events");
 			try (PrintWriter pw = new PrintWriter(new FileWriter(archivo, true))) {
-				pw.println(gson.toJson(evento));
+				pw.println(json);
 			}
 		} catch (Exception e) {
 			System.out.println("❌ Error al guardar evento:");

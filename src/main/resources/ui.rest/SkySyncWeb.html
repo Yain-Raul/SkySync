@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkySync | Inteligencia Climática y Aérea</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --accent: #f97316;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #0ea5e9;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #0c1220;
+            min-height: 100vh;
+            color: var(--light);
+            overflow-x: hidden;
+        }
+
+        /* Animación de carga inicial */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0c1220;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+        }
+
+        .loader-content {
+            text-align: center;
+        }
+
+        .loader-logo {
+            font-size: 3rem;
+            color: var(--primary-light);
+            margin-bottom: 1rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        .loader-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .loader-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary-light));
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        /* Fondo animado */
+        .animated-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: twinkle var(--duration) ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; }
+            50% { opacity: var(--opacity); }
+        }
+
+        .cloud {
+            position: absolute;
+            opacity: 0.1;
+            filter: blur(10px);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            animation: float calc(var(--duration) * 5) ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(calc(var(--move-y) * 1px)) translateX(calc(var(--move-x) * 1px)); }
+        }
+
+        .gradient-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            opacity: 0.7;
+        }
+
+        .navbar {
+            background: rgba(12, 18, 32, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: 0.5rem 0;
+            background: rgba(12, 18, 32, 0.95);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .navbar-brand i {
+            font-size: 1.25rem;
+        }
+
+        .navbar-brand::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-light);
+            transition: width 0.3s ease;
+        }
+
+        .navbar-brand:hover::after {
+            width: 100%;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 8rem 1rem 6rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1s forwards;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-weight: 700;
+            font-size: 4rem;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero h1::before {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: blur(8px);
+            opacity: 0.5;
+            animation: pulse 4s infinite;
+        }
+
+        .hero p {
+            font-weight: 400;
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-plane {
+            position: absolute;
+            font-size: 10rem;
+            color: rgba(255, 255, 255, 0.03);
+            animation: flyAcross 20s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes flyAcross {
+            0% {
+                transform: translate(-100vw, 10vh) rotate(15deg);
+            }
+            100% {
+                transform: translate(100vw, -10vh) rotate(15deg);
+            }
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1.25rem;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 0.9rem;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(0, 0, 0, 0) 50%);
+            z-index: 0;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .card:hover::after {
+            opacity: 1;
+        }
+
+        .btn {
+            border-radius: 0.75rem;
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            box-shadow: 0 5px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-light);
+            border: 1px solid var(--primary-light);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-outline-primary:hover {
+            background: rgba(37, 99, 235, 0.2);
+            box-shadow: 0 5px 20px rgba(37, 99, 235, 0.3);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #0d9668);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #0d9668, var(--success));
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626, var(--danger));
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .form-control {
+            border-radius: 0.75rem;
+            padding: 0.6rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 41, 59, 0.5);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .output-container {
+            position: relative;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .output-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .output-actions button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .output-actions button:hover {
+            color: white;
+            background: rgba(59, 130, 246, 0.3);
+        }
+
+        pre {
+            background: rgba(12, 18, 32, 0.9);
+            color: #a5f3fc;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            max-height: 350px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        pre::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(12, 18, 32, 0.8) 100%);
+            pointer-events: none;
+            opacity: 0.2;
+        }
+
+        pre::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        pre::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        pre::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        pre::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-light);
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            margin-top: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 1rem 2rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            background: linear-gradient(to top, rgba(12, 18, 32, 1) 0%, transparent 100%);
+            position: relative;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-brand {
+            font-weight: 600;
+            color: var(--primary-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-light);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-badge.success {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .status-badge.warning {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .status-badge.error {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+        }
+
+        .status-badge i {
+            margin-right: 0.25rem;
+        }
+
+        .status-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+
+        /* Animaciones para elementos */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Animación de clima */
+        .weather-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        .rain {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.7));
+            opacity: 0;
+            animation: rain linear infinite;
+        }
+
+        @keyframes rain {
+            0% {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .hero-plane {
+                font-size: 6rem;
+            }
+        }
+
+        /* Animación de entrada para las tarjetas */
+        .row > [class*="col-"] {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .row > [class*="col-"]:nth-child(1) {
+            animation: fadeInUp 0.6s forwards;
+            animation-delay: 0.7s;
+        }
+
+        .row > [class*="col-"]:nth-child(2) {
+            animation: fadeInUp 0.6s forwards;
+            animation-delay: 0.9s;
+        }
+
+        .row > [class*="col-"]:nth-child(3) {
+            animation: fadeInUp 0.6s forwards;
+            animation-delay: 1.1s;
+        }
+
+        .row > [class*="col-"]:nth-child(4) {
+            animation: fadeInUp 0.6s forwards;
+            animation-delay: 1.3s;
+        }
+
+        /* Animación para el cursor de datos */
+        .data-cursor {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            box-shadow: 0 0 10px var(--primary-light);
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+        }
+
+        .data-cursor::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-light);
+            animation: pulse 2s infinite;
+        }
+
+        /* Efecto de partículas para el fondo */
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loader de página -->
+<div class="page-loader" id="pageLoader">
+    <div class="loader-content">
+        <div class="loader-logo">
+            <i class="fa-solid fa-plane-up"></i>
+        </div>
+        <div class="loader-bar">
+            <div class="loader-progress" id="loaderProgress"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Fondo animado -->
+<div class="animated-background">
+    <div class="gradient-bg"></div>
+    <div class="stars" id="stars"></div>
+    <div class="weather-animation" id="weatherAnimation"></div>
+</div>
+
+<nav class="navbar navbar-expand-lg" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <i class="fa-solid fa-plane-up"></i> SkySync
+        </a>
+        <div class="ms-auto d-flex align-items-center">
+            <span class="status-badge success">
+                <i class="fa-solid fa-circle-check"></i> Conectado
+            </span>
+        </div>
+    </div>
+</nav>
+
+<div class="hero">
+    <i class="fa-solid fa-plane hero-plane"></i>
+    <i class="fa-solid fa-plane hero-plane" style="animation-delay: 5s; font-size: 6rem; opacity: 0.02;"></i>
+    <i class="fa-solid fa-plane hero-plane" style="animation-delay: 10s; font-size: 8rem; opacity: 0.01;"></i>
+
+    <div class="hero-content">
+        <h1 data-text="SkySync"><i class="fa-solid fa-plane-up"></i> SkySync</h1>
+        <p>Plataforma avanzada de predicción meteorológica y análisis de vuelos para las Islas Canarias</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="section-title">
+                    <i class="fa-solid fa-cloud-sun"></i>
+                    <span>Recolección de Datos</span>
+                </div>
+                <p class="text-secondary mb-4">Obtén datos actualizados sobre el clima y estado de vuelos en tiempo real</p>
+                <div class="d-grid gap-3">
+                    <button class="btn btn-primary" onclick="post('/recolectar/clima')">
+                        <i class="fa-solid fa-cloud me-2"></i>Recolectar Datos Climáticos
+                    </button>
+                    <button class="btn btn-primary" onclick="post('/recolectar/vuelos')">
+                        <i class="fa-solid fa-plane me-2"></i>Recolectar Estado de Vuelos
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="section-title">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Análisis de Datos</span>
+                </div>
+                <p class="text-secondary mb-4">Analiza patrones y obtén información valiosa sobre condiciones actuales</p>
+                <div class="d-grid gap-2">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button class="btn btn-outline-primary w-100" onclick="get('/clima/promedio')">
+                                <i class="fa-solid fa-temperature-half me-1"></i> Clima Promedio
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-primary w-100" onclick="get('/vuelos/estado')">
+                                <i class="fa-solid fa-plane-departure me-1"></i> Estado de Vuelos
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button class="btn btn-outline-primary w-100" onclick="get('/clima/extremos')">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i> Condiciones Extremas
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-primary w-100 pulse" onclick="get('/alerta/combinada')">
+                                <i class="fa-solid fa-bell me-1"></i> Alerta Combinada
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="section-title">
+                    <i class="fa-solid fa-calendar-day"></i>
+                    <span>Informe por Fecha</span>
+                </div>
+                <p class="text-secondary mb-4">Genera informes detallados para una fecha específica</p>
+                <div class="mb-3">
+                    <label for="fechaInforme" class="form-label">Selecciona una fecha:</label>
+                    <input type="date" id="fechaInforme" class="form-control">
+                </div>
+                <button class="btn btn-success w-100" onclick="generarInforme()">
+                    <i class="fa-solid fa-file-lines me-2"></i>Generar Informe Detallado
+                </button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="section-title">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>Predicción de Cancelación</span>
+                </div>
+                <p class="text-secondary mb-4">Predice la probabilidad de cancelación de vuelos por aeropuerto</p>
+                <div class="mb-3">
+                    <label for="codigoAeropuerto" class="form-label">Código IATA del aeropuerto:</label>
+                    <input type="text" id="codigoAeropuerto" class="form-control" placeholder="Ej: LPA, TFN, TFS...">
+                </div>
+                <button class="btn btn-danger w-100" onclick="predecir()">
+                    <i class="fa-solid fa-magnifying-glass-chart me-2"></i>Analizar Riesgo de Cancelación
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="output-header">
+            <div class="section-title mb-0">
+                <i class="fa-solid fa-terminal"></i>
+                <span>Resultados</span>
+            </div>
+            <div class="output-actions">
+                <button id="copyBtn" title="Copiar al portapapeles">
+                    <i class="fa-solid fa-copy"></i>
+                </button>
+                <button id="clearBtn" title="Limpiar resultados">
+                    <i class="fa-solid fa-broom"></i>
+                </button>
+            </div>
+        </div>
+        <div class="output-container">
+            <pre id="output">Esperando resultados... Selecciona una acción para comenzar.</pre>
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Procesando solicitud...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <i class="fa-solid fa-plane-up me-1"></i> SkySync
+            </div>
+            <p>Plataforma de inteligencia climática y aérea para las Islas Canarias</p>
+            <div class="footer-links">
+                <a href="#"><i class="fa-solid fa-circle-info me-1"></i> Acerca de</a>
+                <a href="#"><i class="fa-solid fa-code me-1"></i> API</a>
+                <a href="#"><i class="fa-solid fa-envelope me-1"></i> Contacto</a>
+            </div>
+            <p class="mb-0">SkySync © 2025 – Proyecto académico de Ciencia e Ingeniería de Datos<br>Desarrollado por Raúl Mendoza</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Elementos DOM
+    const outputEl = document.getElementById('output');
+    const loadingEl = document.getElementById('loading');
+    const copyBtn = document.getElementById('copyBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const pageLoader = document.getElementById('pageLoader');
+    const loaderProgress = document.getElementById('loaderProgress');
+    const mainNav = document.getElementById('mainNav');
+    const starsContainer = document.getElementById('stars');
+    const weatherAnimation = document.getElementById('weatherAnimation');
+
+    // Animación de carga inicial
+    function simulateLoading() {
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 10;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                setTimeout(() => {
+                    pageLoader.style.opacity = '0';
+                    setTimeout(() => {
+                        pageLoader.style.display = 'none';
+                    }, 500);
+                }, 500);
+            }
+            loaderProgress.style.width = `${progress}%`;
+        }, 200);
+    }
+
+    // Crear estrellas para el fondo
+    function createStars() {
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+
+            // Propiedades aleatorias para cada estrella
+            const size = Math.random() * 3;
+            const posX = Math.random() * 100;
+            const posY = Math.random() * 100;
+            const duration = 3 + Math.random() * 7;
+            const delay = Math.random() * 5;
+            const opacity = 0.3 + Math.random() * 0.7;
+
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.left = `${posX}%`;
+            star.style.top = `${posY}%`;
+            star.style.setProperty('--duration', `${duration}s`);
+            star.style.setProperty('--delay', `${delay}s`);
+            star.style.setProperty('--opacity', opacity);
+
+            starsContainer.appendChild(star);
+        }
+
+        // Añadir algunas nubes
+        for (let i = 0; i < 10; i++) {
+            const cloud = document.createElement('div');
+            cloud.classList.add('cloud');
+
+            const size = 50 + Math.random() * 100;
+            const posX = Math.random() * 100;
+            const posY = Math.random() * 100;
+            const duration = 20 + Math.random() * 40;
+            const delay = Math.random() * 10;
+            const moveX = -50 + Math.random() * 100;
+            const moveY = -30 + Math.random() * 60;
+
+            cloud.style.width = `${size}px`;
+            cloud.style.height = `${size / 2}px`;
+            cloud.style.left = `${posX}%`;
+            cloud.style.top = `${posY}%`;
+            cloud.style.setProperty('--duration', `${duration}s`);
+            cloud.style.setProperty('--delay', `${delay}s`);
+            cloud.style.setProperty('--move-x', moveX);
+            cloud.style.setProperty('--move-y', moveY);
+
+            starsContainer.appendChild(cloud);
+        }
+    }
+
+    // Crear efecto de lluvia
+    function createRain() {
+        for (let i = 0; i < 100; i++) {
+            setTimeout(() => {
+                const drop = document.createElement('div');
+                drop.classList.add('rain');
+
+                const posX = Math.random() * 100;
+                const duration = 0.5 + Math.random();
+                const delay = Math.random() * 5;
+
+                drop.style.left = `${posX}%`;
+                drop.style.animationDuration = `${duration}s`;
+                drop.style.animationDelay = `${delay}s`;
+
+                weatherAnimation.appendChild(drop);
+
+                // Eliminar la gota después de la animación
+                setTimeout(() => {
+                    drop.remove();
+                }, (duration + delay) * 1000);
+            }, i * 50);
+        }
+    }
+
+    // Efecto de scroll para la barra de navegación
+    function handleScroll() {
+        if (window.scrollY > 50) {
+            mainNav.classList.add('scrolled');
+        } else {
+            mainNav.classList.remove('scrolled');
+        }
+    }
+
+    // Animación de entrada para elementos al hacer scroll
+    function handleScrollAnimation() {
+        const elements = document.querySelectorAll('.fade-in');
+        elements.forEach(el => {
+            const rect = el.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+
+            if (rect.top <= windowHeight * 0.85) {
+                el.classList.add('active');
+            }
+        });
+    }
+
+    // Función para mostrar/ocultar el indicador de carga
+    function toggleLoading(show) {
+        outputEl.style.display = show ? 'none' : 'block';
+        loadingEl.style.display = show ? 'block' : 'none';
+    }
+
+    // Función para copiar el resultado al portapapeles
+    copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(outputEl.textContent)
+            .then(() => {
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            });
+    });
+
+    // Función para limpiar los resultados
+    clearBtn.addEventListener('click', () => {
+        outputEl.textContent = 'Esperando resultados... Selecciona una acción para comenzar.';
+    });
+
+    // Función para realizar solicitudes GET
+    async function get(path) {
+        try {
+            toggleLoading(true);
+            const res = await fetch(`http://localhost:7000${path}`);
+            toggleLoading(false);
+
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const data = await res.json();
+                const texto = Object.values(data)[0];
+                outputEl.textContent = texto.replaceAll("\\n", "\n");
+            } else {
+                const text = await res.text();
+                outputEl.textContent = text;
+            }
+        } catch (error) {
+            toggleLoading(false);
+            outputEl.textContent = `Error: ${error.message}\nVerifica que el servidor esté en ejecución en http://localhost:7000`;
+        }
+    }
+
+    // Función para realizar solicitudes POST
+    async function post(path) {
+        try {
+            toggleLoading(true);
+            const res = await fetch(`http://localhost:7000${path}`, { method: 'POST' });
+            toggleLoading(false);
+
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const data = await res.json();
+                const texto = Object.values(data)[0];
+                outputEl.textContent = texto.replaceAll("\\n", "\n");
+            } else {
+                const text = await res.text();
+                outputEl.textContent = text;
+            }
+        } catch (error) {
+            toggleLoading(false);
+            outputEl.textContent = `Error: ${error.message}\nVerifica que el servidor esté en ejecución en http://localhost:7000`;
+        }
+    }
+
+    // Función para generar informe por fecha
+    async function generarInforme() {
+        const fecha = document.getElementById("fechaInforme").value;
+        if (!fecha) {
+            alert("Por favor, introduce una fecha válida");
+            return;
+        }
+        await get(`/informe?fecha=${fecha}`);
+    }
+
+    // Función para predecir cancelación de vuelos
+    async function predecir() {
+        const codigo = document.getElementById("codigoAeropuerto").value;
+        if (!codigo) {
+            alert("Por favor, introduce un código IATA válido (ej: LPA)");
+            return;
+        }
+        await get(`/prediccion?codigo=${codigo}`);
+    }
+
+    // Crear efecto de cursor de datos
+    function createDataCursor() {
+        const cursor = document.createElement('div');
+        cursor.classList.add('data-cursor');
+        document.body.appendChild(cursor);
+
+        const posX = Math.random() * window.innerWidth;
+        const posY = Math.random() * window.innerHeight;
+
+        cursor.style.left = `${posX}px`;
+        cursor.style.top = `${posY}px`;
+        cursor.style.opacity = '1';
+
+        // Animar el cursor
+        let steps = 0;
+        const maxSteps = 20 + Math.floor(Math.random() * 30);
+
+        const animateCursor = () => {
+            if (steps >= maxSteps) {
+                cursor.style.opacity = '0';
+                setTimeout(() => {
+                    cursor.remove();
+                }, 500);
+                return;
+            }
+
+            const newX = parseFloat(cursor.style.left) + (-10 + Math.random() * 20);
+            const newY = parseFloat(cursor.style.top) + (-10 + Math.random() * 20);
+
+            cursor.style.left = `${newX}px`;
+            cursor.style.top = `${newY}px`;
+
+            steps++;
+            setTimeout(animateCursor, 100);
+        };
+
+        animateCursor();
+    }
+
+    // Crear partículas para el fondo
+    function createParticles() {
+        for (let i = 0; i < 30; i++) {
+            setTimeout(() => {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+
+                const posX = Math.random() * window.innerWidth;
+                const posY = Math.random() * window.innerHeight;
+
+                particle.style.left = `${posX}px`;
+                particle.style.top = `${posY}px`;
+
+                document.body.appendChild(particle);
+
+                // Animar la partícula
+                let opacity = 0.7;
+                const fadeOut = setInterval(() => {
+                    opacity -= 0.01;
+                    particle.style.opacity = opacity;
+
+                    if (opacity <= 0) {
+                        clearInterval(fadeOut);
+                        particle.remove();
+                    }
+                }, 50);
+            }, i * 1000);
+        }
+    }
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', () => {
+        // Simular carga
+        simulateLoading();
+
+        // Crear estrellas
+        createStars();
+
+        // Establecer la fecha actual en el selector de fecha
+        const today = new Date();
+        const formattedDate = today.toISOString().split('T')[0];
+        document.getElementById('fechaInforme').value = formattedDate;
+
+        // Eventos de scroll
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScrollAnimation);
+
+        // Efectos visuales periódicos
+        setInterval(createDataCursor, 5000);
+        setInterval(createParticles, 10000);
+
+        // Marcar elementos para animación de entrada
+        document.querySelectorAll('.card, .section-title, pre').forEach(el => {
+            el.classList.add('fade-in');
+        });
+
+        // Iniciar animación de entrada
+        setTimeout(handleScrollAnimation, 1500);
+    });
+</script>
+
+</body>
+</html>

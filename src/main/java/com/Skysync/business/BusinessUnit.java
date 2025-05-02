@@ -5,8 +5,8 @@ import com.Skysync.models.Clima;
 import com.Skysync.models.Vuelo;
 import com.google.gson.Gson;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import static com.Skysync.main.Config.UMBRAL_HUMEDAD;
-import static com.Skysync.main.Config.UMBRAL_VELOCIDAD_VIENTO;
+import com.Skysync.config.AppConfig;
+
 
 import javax.jms.*;
 import java.util.concurrent.Executors;
@@ -18,16 +18,18 @@ import java.io.FileReader;
 import java.util.List;
 import java.util.ArrayList;
 
-
-
-import static com.Skysync.main.Config.BROKER_URL;
-import static com.Skysync.main.Config.WEATHER_TOPIC;
-
 public class BusinessUnit implements MessageListener {
 
 	private final Gson gson = new Gson();
 	private final DatamartManager datamartManager = new DatamartManager();
 	private ExecutorService executorService;
+
+	String WEATHER_TOPIC = AppConfig.get("WEATHER_TOPIC");
+
+	String BROKER_URL = AppConfig.get("BROKER_URL");
+
+	double UMBRAL_VELOCIDAD_VIENTO = AppConfig.getDouble("UMBRAL_VELOCIDAD_VIENTO");
+	double UMBRAL_HUMEDAD = AppConfig.getDouble("UMBRAL_HUMEDAD");
 
 	private boolean esClimaExtremo(Clima clima) {
 		return clima.getVelocidadViento() > UMBRAL_VELOCIDAD_VIENTO ||
@@ -76,33 +78,20 @@ public class BusinessUnit implements MessageListener {
 				String json = textMessage.getText();
 
 				if (json.contains("temperatura") && json.contains("humedad")) {
-					// Es evento de clima
-					WeatherEvent evento = gson.fromJson(json, WeatherEvent.class);
-					Clima clima = evento.getData();
-					datamartManager.insertarClima(clima);
-
-					System.out.println("✅ Clima procesado y guardado: " + clima);
-
-					if (esClimaExtremo(clima)) {
-						System.out.println("🚨 ALERTA INMEDIATA: Condiciones extremas detectadas en " + clima.getCiudad());
-						System.out.printf("Detalles: 🌡️ %.1f°C, 💧 %.0f%%, 💨 %.1f km/h, ☁️ %s%n",
-								clima.getTemperatura(), clima.getHumedad(), clima.getVelocidadViento(), clima.getCondicion());
-					}
-
+					procesarEventoClima(json);
 				} else if (json.contains("numeroVuelo") && json.contains("estado")) {
-					// Es evento de vuelo
-					Vuelo vuelo = gson.fromJson(json, Vuelo.class);
-					datamartManager.insertarVuelo(vuelo);
-
-					System.out.println("✅ Vuelo procesado y guardado: " + vuelo.getNumeroVuelo());
+					procesarEventoVuelo(json);
+				} else {
+					System.out.println("⚠️ Evento no reconocido: " + json);
 				}
 
 			} catch (Exception e) {
-				System.out.println("⚠️ Error procesando evento en BusinessUnit:");
+				System.out.println("⚠️ Error procesando evento general:");
 				e.printStackTrace();
 			}
 		}
 	}
+
 
 	public void cargarEventosHistoricos() {
 		List<File> archivosEventos = new ArrayList<>();
@@ -296,6 +285,35 @@ public class BusinessUnit implements MessageListener {
 		}
 	}
 
+	private void procesarEventoClima(String json) {
+		try {
+			WeatherEvent evento = gson.fromJson(json, WeatherEvent.class);
+			Clima clima = evento.getData();
+			datamartManager.insertarClima(clima);
+
+			System.out.println("✅ Clima procesado y guardado: " + clima);
+
+			if (esClimaExtremo(clima)) {
+				System.out.println("🚨 ALERTA INMEDIATA: Condiciones extremas detectadas en " + clima.getCiudad());
+				System.out.printf("Detalles: 🌡️ %.1f°C, 💧 %.0f%%, 💨 %.1f km/h, ☁️ %s%n",
+						clima.getTemperatura(), clima.getHumedad(), clima.getVelocidadViento(), clima.getCondicion());
+			}
+		} catch (Exception e) {
+			System.out.println("⚠️ Error procesando evento de clima:");
+			e.printStackTrace();
+		}
+	}
+
+	private void procesarEventoVuelo(String json) {
+		try {
+			Vuelo vuelo = gson.fromJson(json, Vuelo.class);
+			datamartManager.insertarVuelo(vuelo);
+			System.out.println("✅ Vuelo procesado y guardado: " + vuelo.getNumeroVuelo());
+		} catch (Exception e) {
+			System.out.println("⚠️ Error procesando evento de vuelo:");
+			e.printStackTrace();
+		}
+	}
 
 
 

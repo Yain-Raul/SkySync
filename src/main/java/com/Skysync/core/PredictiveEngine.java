@@ -1,6 +1,6 @@
 package com.Skysync.core;
 
-import com.Skysync.api.OpenWeatherAPI;
+import com.Skysync.feeders.weather.OpenWeatherAPI;
 import com.Skysync.models.Clima;
 
 import java.util.HashMap;
@@ -23,76 +23,68 @@ public class PredictiveEngine {
 		IATA_TO_CIUDAD.put("VDE", "Valverde");
 	}
 
-	public void predecir(String iata) {
-		iata = iata.toUpperCase();
-
-		if (!IATA_TO_CIUDAD.containsKey(iata)) {
-			System.out.println("❌ Código IATA no válido. Opciones: " + IATA_TO_CIUDAD.keySet());
-			return;
-		}
-
-		String ciudad = IATA_TO_CIUDAD.get(iata);
-		Clima clima = climaAPI.obtenerClima(ciudad);
+	public String predecirComoTexto(String codigo) {
+		Clima clima = climaAPI.obtenerClimaPorCodigo(codigo);
 
 		if (clima == null) {
-			System.out.println("⚠️ No se pudo obtener el clima de " + ciudad);
-			return;
+			return "⚠️ No se pudo obtener el clima para " + codigo;
 		}
-
-		System.out.println("\n📍 Aeropuerto " + iata + " (" + ciudad + ")");
-		System.out.println("🌤️ Clima actual: " + clima);
 
 		ResultadoPrediccion resultado = calcularProbabilidad(clima);
-		System.out.printf("🔮 Riesgo estimado: %s (%.1f%%)\n", resultado.nivel, resultado.probabilidad);
-		if (!resultado.motivo.isEmpty()) {
-			System.out.println("🧠 Motivo: " + resultado.motivo);
-		}
+
+		return String.format("""
+		📍 Aeropuerto %s (%s)
+		🌤️ Clima actual: %s
+		🔮 Riesgo estimado: %s (%.1f%%)
+		🧠 Motivo: %s
+		""",
+				codigo, clima.getCiudad(), clima.toString(),
+				resultado.nivel, resultado.probabilidad,
+				resultado.motivo);
 	}
 
-	private ResultadoPrediccion calcularProbabilidad(Clima clima) {
-		double prob = 0;
-		StringBuilder motivos = new StringBuilder();
-
-		if (clima.getVelocidadViento() > 30) {
-			prob += 35;
+	private double evaluarViento(double velocidad, StringBuilder motivos) {
+		if (velocidad > 30) {
 			motivos.append("Viento muy fuerte. ");
-		} else if (clima.getVelocidadViento() > 20) {
-			prob += 20;
+			return 35;
+		} else if (velocidad > 20) {
 			motivos.append("Viento elevado. ");
+			return 20;
 		}
-
-		if (clima.getHumedad() > 90) {
-			prob += 20;
-			motivos.append("Humedad muy alta. ");
-		} else if (clima.getHumedad() > 75) {
-			prob += 10;
-			motivos.append("Humedad elevada. ");
-		}
-
-		if (clima.getTemperatura() < 5) {
-			prob += 15;
-			motivos.append("Temperatura baja. ");
-		}
-
-		if (clima.getCondicion().toLowerCase().contains("rain") ||
-				clima.getCondicion().toLowerCase().contains("storm")) {
-			prob += 25;
-			motivos.append("Lluvia o tormenta detectada. ");
-		} else if (clima.getCondicion().toLowerCase().contains("fog")) {
-			prob += 15;
-			motivos.append("Niebla o baja visibilidad. ");
-		}
-
-		prob = Math.min(prob, 100);
-
-		String nivel;
-		if (prob >= 75) nivel = "CRÍTICO";
-		else if (prob >= 50) nivel = "ALTO";
-		else if (prob >= 25) nivel = "MODERADO";
-		else nivel = "BAJO";
-
-		return new ResultadoPrediccion(prob, nivel, motivos.toString().trim());
+		return 0;
 	}
+
+	private double evaluarHumedad(double humedad, StringBuilder motivos) {
+		if (humedad > 90) {
+			motivos.append("Humedad muy alta. ");
+			return 20;
+		} else if (humedad > 75) {
+			motivos.append("Humedad elevada. ");
+			return 10;
+		}
+		return 0;
+	}
+
+	private double evaluarTemperatura(double temperatura, StringBuilder motivos) {
+		if (temperatura < 5) {
+			motivos.append("Temperatura baja. ");
+			return 15;
+		}
+		return 0;
+	}
+
+	private double evaluarCondicion(String condicion, StringBuilder motivos) {
+		String c = condicion.toLowerCase();
+		if (c.contains("rain") || c.contains("storm")) {
+			motivos.append("Lluvia o tormenta detectada. ");
+			return 25;
+		} else if (c.contains("fog")) {
+			motivos.append("Niebla o baja visibilidad. ");
+			return 15;
+		}
+		return 0;
+	}
+
 
 	private static class ResultadoPrediccion {
 		double probabilidad;
@@ -106,19 +98,28 @@ public class PredictiveEngine {
 		}
 	}
 
-	public String predecirComoTexto(String codigo) {
-		Clima clima = new OpenWeatherAPI().obtenerClimaPorCodigo(codigo);
-
-		if (clima == null) {
-			return "⚠️ No se pudo obtener el clima para " + codigo;
-		}
-
-		double riesgo = 0.0;
-		if (clima.getCondicion().toLowerCase().contains("rain")) riesgo += 30;
-		if (clima.getVelocidadViento() > 25) riesgo += 30;
-		if (clima.getHumedad() > 90) riesgo += 20;
-
-		return String.format("📍 Aeropuerto %s\n🌤️ Clima actual: %s\n🔮 Riesgo estimado de cancelación: %.1f%%",
-				codigo, clima.toString(), riesgo);
+	public void predecir(String codigo) {
+		System.out.println(predecirComoTexto(codigo));
 	}
+
+	private ResultadoPrediccion calcularProbabilidad(Clima clima) {
+		StringBuilder motivos = new StringBuilder();
+		double prob = 0;
+
+		prob += evaluarViento(clima.getVelocidadViento(), motivos);
+		prob += evaluarHumedad(clima.getHumedad(), motivos);
+		prob += evaluarTemperatura(clima.getTemperatura(), motivos);
+		prob += evaluarCondicion(clima.getCondicion(), motivos);
+
+		prob = Math.min(prob, 100);
+
+		String nivel;
+		if (prob >= 75) nivel = "CRÍTICO";
+		else if (prob >= 50) nivel = "ALTO";
+		else if (prob >= 25) nivel = "MODERADO";
+		else nivel = "BAJO";
+
+		return new ResultadoPrediccion(prob, nivel, motivos.toString().trim());
+	}
+
 }

@@ -1,10 +1,10 @@
-package com.Skysync.api;
+package com.Skysync.feeders.flights;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.Skysync.models.Vuelo;
-import com.Skysync.main.Config;
+import com.Skysync.config.AppConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -15,12 +15,15 @@ import java.util.List;
 public class AviationStackAPI {
 
 	private static final String BASE_URL = "http://api.aviationstack.com/v1/flights";
+
+	String API_KEY = AppConfig.get("AVIATIONSTACK_API_KEY");
 	private final OkHttpClient client = new OkHttpClient();
+
 
 	public List<Vuelo> obtenerVuelosPorAeropuerto(String aeropuertoIATA) {
 		List<Vuelo> lista = new ArrayList<>();
 
-		String url = BASE_URL + "?access_key=" + Config.AVIATIONSTACK_API_KEY + "&dep_iata=" + aeropuertoIATA;
+		String url = BASE_URL + "?access_key=" + API_KEY + "&dep_iata=" + aeropuertoIATA;
 
 		System.out.println("📡 Llamando a AviationStack: " + url);
 

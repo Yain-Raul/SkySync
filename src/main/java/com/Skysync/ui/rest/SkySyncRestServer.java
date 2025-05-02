@@ -1,13 +1,13 @@
-package com.Skysync.rest;
+package com.Skysync.ui.rest;
 
 import com.Skysync.business.BusinessUnit;
-import com.Skysync.core.ClimaCollector;
-import com.Skysync.core.DataCollector;
+import com.Skysync.feeders.weather.ClimaCollector;
+import com.Skysync.feeders.flights.DataCollector;
 import com.Skysync.core.InformeGenerator;
 import com.Skysync.core.PredictiveEngine;
 import io.javalin.Javalin;
 
-public class MainRest {
+public class SkySyncRestServer {
 
 	public static void main(String[] args) {
 

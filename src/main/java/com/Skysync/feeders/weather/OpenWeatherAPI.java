@@ -1,9 +1,9 @@
-package com.Skysync.api;
+package com.Skysync.feeders.weather;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.Skysync.models.Clima;
-import com.Skysync.main.Config;
+import com.Skysync.config.AppConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -11,7 +11,8 @@ import java.util.Map;
 
 
 public class OpenWeatherAPI {
-	private static final String API_KEY = Config.OPENWEATHER_API_KEY;
+	String API_KEY = AppConfig.get("OPENWEATHER_API_KEY");
+	double umbral = AppConfig.getDouble("UMBRAL_VELOCIDAD_VIENTO");
 	private static final String BASE_URL = "https://api.openweathermap.org/data/2.5/weather?q=";
 	private final OkHttpClient client = new OkHttpClient();
 

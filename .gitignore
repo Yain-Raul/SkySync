@@ -1,15 +1,16 @@
+### MAVEN / JAVA ###
 target/
 !.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+
+# build/ se ignora, pero no si está dentro de src
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
+.idea/
 *.iml
+*.iws
 *.ipr
 
 ### Eclipse ###
@@ -17,22 +18,26 @@ target/
 .classpath
 .factorypath
 .project
-.settings
+.settings/
 .springBeans
 .sts4-cache
 
 ### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
 
-### VS Code ###
+### Visual Studio Code ###
 .vscode/
 
-### Mac OS ###
+### Sistema operativo ###
 .DS_Store
+Thumbs.db
+
+### SkySync: archivos específicos a ignorar ###
+eventstore/
+data/
+*.db
+application.properties

@@ -1,10 +1,10 @@
-package com.Skysync.main;
+package com.Skysync.ui.cli;
 
 import com.Skysync.core.BackgroundCollector;
-import com.Skysync.core.DataCollector;
+import com.Skysync.feeders.flights.DataCollector;
 import com.Skysync.core.InformeGenerator;
 import com.Skysync.core.PredictiveEngine;
-import com.Skysync.core.ClimaCollector;
+import com.Skysync.feeders.weather.ClimaCollector;
 import com.Skysync.store.EventStoreBuilder;
 import com.Skysync.business.BusinessUnit;
 
