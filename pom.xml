@@ -80,7 +80,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>com.Skysync.Main</mainClass>
+                    <mainClass>com.skysync.Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>
