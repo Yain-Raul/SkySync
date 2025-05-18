@@ -4,9 +4,13 @@ import com.skysync.core.domain.model.Vuelo;
 import java.time.Instant;
 
 public class FlightEvent {
-	private String ts;   // Timestamp en UTC
-	private String ss;   // Source (ej. "feederB")
-	private Vuelo data;  // Datos del vuelo
+	private String ts;
+	private String ss;
+	private Vuelo data;
+
+	public FlightEvent() {
+		this.ts = Instant.now().toString();
+	}
 
 	public FlightEvent(String ss, Vuelo data) {
 		this.ts = Instant.now().toString();
