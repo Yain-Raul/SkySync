@@ -1,6 +1,6 @@
 # SkySync  Sistema de Correlacin entre Clima y Retrasos de Vuelos en Canarias
 
-SkySync es una plataforma de anlisis de datos en tiempo real y diferido que correlaciona condiciones meteorolgicas con el estado de los vuelos en los aeropuertos de Canarias. Utiliza las APIs de OpenWeatherMap y AviationStack para recolectar datos, los publica en ActiveMQ, y permite anlisis mediante CLI y API REST. **SkySync ayuda a aeropuertos y pasajeros a anticipar y mitigar disrupciones climticas.**
+SkySync es una plataforma de anlisis de datos en tiempo real y diferido que correlaciona condiciones meteorolgicas con el estado de los vuelos en los aeropuertos de Canarias. Utiliza las APIs de OpenWeatherMap y AviationStack para recolectar datos, los publica en ActiveMQ, y permite anlisis mediante CLI y API REST. **SkySync ayuda a aeropuertos y pasajeros a anticipar y mitigar disrupciones climticas.** ()
 
 El sistema está estructurado en mdulos independientes, siguiendo arquitectura hexagonal y principios SOLID.
 
@@ -102,12 +102,12 @@ graph TD
 ### Dominio y Puertos (skysync-core)
 Este diagrama muestra los modelos de dominio y los puertos definidos en el ncleo del sistema, siguiendo la arquitectura hexagonal.
 
-![Core Domain Diagram](docs\diagrams\diagrama1.png)
+![Core Domain Diagram](docs/diagrams/diagrama1.png)
 
 ### Unidad de Negocio y Adaptadores (skysync-business-unit)
 Este diagrama muestra cmo la unidad de negocio interacta con adaptadores, repositorios y mdulos externos, integrndose con ActiveMQ para el procesamiento de eventos.
 
-![Business Unit Diagram](docs\diagrams\diagrama2.png)
+![Business Unit Diagram](docs/diagrams/diagrama2.png)
 ##  Estructura por mdulos
 
 

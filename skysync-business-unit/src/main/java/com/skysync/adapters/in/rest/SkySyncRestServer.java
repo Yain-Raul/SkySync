@@ -36,7 +36,7 @@ public class SkySyncRestServer {
 			e.printStackTrace();
 		}
 
-		// 🔹 Recolectar clima y vuelos
+
 		app.post("/recolectar/clima", ctx -> {
 			ctx.result("{\"message\":\"⚠️ Recolección automática se realiza desde CLI programado\"}");
 		});
@@ -45,7 +45,7 @@ public class SkySyncRestServer {
 			ctx.result("{\"message\":\"⚠️ Recolección automática se realiza desde CLI programado\"}");
 		});
 
-		// 🔹 Generar informe por fecha
+
 		app.get("/informe", ctx -> {
 			String fecha = ctx.queryParam("fecha");
 			if (fecha == null || fecha.isBlank()) {
@@ -61,7 +61,7 @@ public class SkySyncRestServer {
 			ctx.result("{\"informe\":\"" + resultado.replace("\n", "\\n") + "\"}");
 		});
 
-		// 🔹 Predicción por IATA
+
 		app.get("/prediccion", ctx -> {
 			String codigo = ctx.queryParam("codigo");
 			if (codigo == null || codigo.isBlank()) {
@@ -76,7 +76,6 @@ public class SkySyncRestServer {
 			ctx.result("{\"prediccion\":\"" + resultado.replace("\n", "\\n") + "\"}");
 		});
 
-		// 🔹 Clima promedio
 		app.get("/clima/promedio", ctx -> {
 			var climaRepo = new SQLiteClimaRepository();
 			var servicio = new GenerarResumenClimaService(climaRepo);
@@ -84,7 +83,7 @@ public class SkySyncRestServer {
 			ctx.result("{\"resumen\":\"" + resultado.replace("\n", "\\n") + "\"}");
 		});
 
-		// 🔹 Estado de vuelos
+
 		app.get("/vuelos/estado", ctx -> {
 			var vueloRepo = new SQLiteVueloRepository();
 			var servicio = new ConsultarEstadoVuelosService(vueloRepo);
@@ -99,7 +98,7 @@ public class SkySyncRestServer {
 			ctx.result("{\"extremos\":\"" + resultado.replace("\n", "\\n") + "\"}");
 		});
 
-		// 🔹 Alerta combinada clima + vuelos
+
 		app.get("/alerta/combinada", ctx -> {
 			var climaRepo = new SQLiteClimaRepository();
 			var vueloRepo = new SQLiteVueloRepository();
