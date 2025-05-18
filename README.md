@@ -4,7 +4,7 @@ SkySync es una plataforma de anlisis de datos en tiempo real y diferido que corr
 
 El sistema está estructurado en mdulos independientes, siguiendo arquitectura hexagonal y principios SOLID.
 
-##  Justificacin de APIs y Datamart
+##  Justificación de APIs y Datamart
 
 - **OpenWeatherMap**: Proporciona datos climticos actuales, esenciales para evaluar el impacto del clima en vuelos.
 - **AviationStack**: Monitoriza en tiempo real el estado de vuelos en aeropuertos canarios.
@@ -94,7 +94,7 @@ graph TD
 
 ```
 
-### Arquitectura de la aplicacin (Ejemplo: Business Unit)
+### Arquitectura de la aplicación (Ejemplo: Business Unit)
 - **Puertos**: Interfaces para CLI, REST, y almacenamiento.
 - **Adaptadores**: Implementaciones para SQLite, ActiveMQ, y endpoints REST.
 - **Dominio**: Servicios para informes, predicciones, y alertas.
@@ -161,7 +161,7 @@ SkySync/
    mvn exec:java -Dexec.mainClass="com.skysync.adapters.in.rest.SkySyncRestServer"
    ```
 
-Archivos de configuracin estn en `*/src/main/resources/`.
+Archivos de configuración estn en `*/src/main/resources/`.
 
 
 ### REST API
