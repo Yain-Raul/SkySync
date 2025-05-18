@@ -1,8 +1,6 @@
 package com.skysync.adapters.in.rest;
 
 import com.skysync.application.services.*;
-import com.skysync.core.aplication.ports.out.ClimaPorCodigoPort;
-import com.skysync.core.domain.model.Clima;
 import com.skysync.feederweather.adapters.out.api.OpenWeatherClimaAdapter;
 import com.skysync.adapters.out.persistence.SQLiteClimaRepository;
 import com.skysync.adapters.out.persistence.SQLiteVueloRepository;
@@ -30,6 +28,13 @@ public class SkySyncRestServer {
 		});
 
 		System.out.println("🚀 API REST de SkySync disponible en http://localhost:7000");
+
+		try {
+			java.awt.Desktop.getDesktop().browse(new java.net.URI("http://localhost:7000/ui/SkySyncWeb.html"));
+		} catch (Exception e) {
+			System.err.println("❌ No se pudo abrir automáticamente el navegador.");
+			e.printStackTrace();
+		}
 
 		// 🔹 Recolectar clima y vuelos
 		app.post("/recolectar/clima", ctx -> {
@@ -87,7 +92,6 @@ public class SkySyncRestServer {
 			ctx.result("{\"estado\":\"" + resultado.replace("\n", "\\n") + "\"}");
 		});
 
-		// 🔹 Clima extremo
 		app.get("/clima/extremos", ctx -> {
 			var climaRepo = new SQLiteClimaRepository();
 			var servicio = new DetectarCondicionesExtremasService(climaRepo);

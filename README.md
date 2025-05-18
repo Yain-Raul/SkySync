@@ -1,124 +1,173 @@
-# SkySync – Sistema de Correlación entre Clima y Retrasos de Vuelos en Canarias
+# SkySync  Sistema de Correlacin entre Clima y Retrasos de Vuelos en Canarias
 
-SkySync es una plataforma de análisis de datos en tiempo real y diferido que correlaciona condiciones meteorológicas con el estado de los vuelos en los aeropuertos de Canarias. Utiliza las APIs de OpenWeatherMap y AviationStack para recolectar datos en tiempo real, los publica en un sistema de mensajería ActiveMQ, y permite su análisis mediante una línea de comandos y una API REST.
+SkySync es una plataforma de anlisis de datos en tiempo real y diferido que correlaciona condiciones meteorolgicas con el estado de los vuelos en los aeropuertos de Canarias. Utiliza las APIs de OpenWeatherMap y AviationStack para recolectar datos, los publica en ActiveMQ, y permite anlisis mediante CLI y API REST. **SkySync ayuda a aeropuertos y pasajeros a anticipar y mitigar disrupciones climticas.**
 
-El sistema está estructurado en módulos independientes por funcionalidad, siguiendo arquitectura hexagonal y principios SOLID.
+El sistema está estructurado en mdulos independientes, siguiendo arquitectura hexagonal y principios SOLID.
 
-## 🔗 Justificación de APIs y Datamart
+##  Justificacin de APIs y Datamart
 
-- **OpenWeatherMap**: Proporciona datos climáticos actuales, esenciales para evaluar el impacto del clima en vuelos.
-- **AviationStack**: Permite monitorizar en tiempo real el estado de vuelos en los aeropuertos canarios.
+- **OpenWeatherMap**: Proporciona datos climticos actuales, esenciales para evaluar el impacto del clima en vuelos.
+- **AviationStack**: Monitoriza en tiempo real el estado de vuelos en aeropuertos canarios.
+- **Datamart**: Usa SQLite (`clima_datamart`, `vuelos_datamart`) para anlisis histricos y `.events` para portabilidad y acceso modular.
 
-Los eventos recolectados se almacenan tanto en archivos `.events` como en una base de datos SQLite, permitiendo análisis históricos y procesamiento en tiempo real. Se implementa un datamart con dos tablas: `clima_datamart` y `vuelos_datamart`.
+SQLite y archivos `.events` fueron elegidos por su simplicidad, portabilidad y compatibilidad con entornos acadmicos.
 
-## 🧱 Principios y patrones aplicados
+##  Principios y patrones aplicados
 
-- **Arquitectura hexagonal**: Separación clara entre lógica de dominio, puertos e infraestructura.
-- **SOLID**: Servicios de aplicación independientes, adaptadores desacoplados, y uso extensivo de interfaces.
-- **Publisher/Subscriber**: Implementado mediante ActiveMQ para desacoplar feeders y procesamiento.
-- **Persistencia desacoplada**: SQLite y archivos `.events` actúan como fuentes accesibles por módulos distintos.
+- **skysync-feeder-weather/flights**: Inyección independiente  para clientes API; Single Responsibility para recolección.
+- **skysync-event-store-builder**: Open/Closed para manejar nuevos tipos de eventos; persistencia desacoplada.
+- **skysync-business-unit**: Arquitectura hexagonal para separar lgica de dominio; SOLID para servicios REST/CLI.
+- **General**: Publisher/Subscriber para ActiveMQ; interfaces para extensibilidad.
 
-## 🏗️ Arquitectura del sistema
+##  Arquitectura del sistema
 
 ```mermaid
 graph TD
-    subgraph Feeders
-        A1(OpenWeather API) --> W(Weather Feeder)
-        A2(AviationStack API) --> F(Flight Feeder)
+
+%% --- CORE ---
+    subgraph skysync-core
+        FlightEvent((FlightEvent))
+        WeatherEvent((WeatherEvent))
+        Vuelo(Vuelo)
+        Clima(Clima)
+
+        VueloRepository[[<<interface>> VueloRepository]]
+        ClimaRepository[[<<interface>> ClimaRepository]]
+        ClimaPorCodigoPort[[<<interface>> ClimaPorCodigoPort]]
+        PredecirCancelacionUseCase[[<<interface>> PredecirCancelacionUseCase]]
+
+        VueloRepository -->|manages| Vuelo
+        ClimaRepository -->|manages| Clima
+        ClimaPorCodigoPort -->|queries| Clima
+        PredecirCancelacionUseCase -->|uses| Vuelo
+        PredecirCancelacionUseCase -->|uses| Clima
     end
 
-    W --> MQ((ActiveMQ Broker))
-    F --> MQ
-
-    subgraph Event Store
-        MQ --> ESB(EventStore Builder)
-        ESB --> D1[eventstore/*.events]
+%% --- BROKER ---
+    subgraph ActiveMQ
+        Broker((Broker))
     end
 
-    subgraph Business Unit
-        MQ --> BU(Realtime Processor)
-        BU --> DB[(SQLite DB)]
-        CLI --> BU
-        REST --> BU
+%% --- FEEDERS ---
+    subgraph skysync-feeder-weather
+        WeatherPublisher(WeatherPublisher)
+        WeatherPublisher -->|publishes to| Broker
     end
+
+    subgraph skysync-feeder-flights
+        FlightPublisher(FlightPublisher)
+        FlightPublisher -->|publishes to| Broker
+    end
+
+%% --- EVENT STORE BUILDER ---
+    subgraph skysync-event-store-builder
+        EventStoreBrokerAdapter(EventStoreBrokerAdapter)
+        Broker -->|consumes from| EventStoreBrokerAdapter
+    end
+
+%% --- BUSINESS UNIT ---
+    subgraph skysync-business-unit
+        SkySyncRestServer(SkySyncRestServer)
+        SkySync(SkySync)
+        BusinessUnitEventAdapter(BusinessUnitEventAdapter)
+        SQLiteClimaRepository(SQLiteClimaRepository)
+        SQLiteVueloRepository(SQLiteVueloRepository)
+        PredecirCancelacionService(PredecirCancelacionService)
+        GenerarInformeService(GenerarInformeService)
+
+        SkySyncRestServer -->|uses| BusinessUnitEventAdapter
+        SkySync -->|uses| BusinessUnitEventAdapter
+
+        BusinessUnitEventAdapter -->|accesses| SQLiteClimaRepository
+        BusinessUnitEventAdapter -->|accesses| SQLiteVueloRepository
+
+        BusinessUnitEventAdapter -->|delegates to| PredecirCancelacionService
+        BusinessUnitEventAdapter -->|delegates to| GenerarInformeService
+
+        SQLiteClimaRepository -->|implements| ClimaRepository
+        SQLiteVueloRepository -->|implements| VueloRepository
+        PredecirCancelacionService -->|implements| PredecirCancelacionUseCase
+        GenerarInformeService -->|implements| GenerarInformeUseCase
+
+        Broker -->|consumes from| BusinessUnitEventAdapter
+    end
+
 ```
 
-## 📦 Estructura por módulos
+### Arquitectura de la aplicacin (Ejemplo: Business Unit)
+- **Puertos**: Interfaces para CLI, REST, y almacenamiento.
+- **Adaptadores**: Implementaciones para SQLite, ActiveMQ, y endpoints REST.
+- **Dominio**: Servicios para informes, predicciones, y alertas.
+
+### Dominio y Puertos (skysync-core)
+Este diagrama muestra los modelos de dominio y los puertos definidos en el ncleo del sistema, siguiendo la arquitectura hexagonal.
+
+![Core Domain Diagram](docs\diagrams\diagrama1.png)
+
+### Unidad de Negocio y Adaptadores (skysync-business-unit)
+Este diagrama muestra cmo la unidad de negocio interacta con adaptadores, repositorios y mdulos externos, integrndose con ActiveMQ para el procesamiento de eventos.
+
+![Business Unit Diagram](docs\diagrams\diagrama2.png)
+##  Estructura por mdulos
+
 
 ```
 SkySync/
-├── skysync-core/               # Modelos de dominio, puertos, eventos (reutilizable)
-├── skysync-feeder-weather/     # Recolector de clima (OpenWeather)
-├── skysync-feeder-flights/     # Recolector de vuelos (AviationStack)
-├── skysync-event-store-builder/ # Almacenamiento de eventos en disco
-└── skysync-business-unit/      # Procesamiento y explotación (REST, CLI, servicios)
+ skysync-core/               # Modelos de dominio, puertos, eventos
+ skysync-feeder-weather/     # Recolector de clima
+ skysync-feeder-flights/     # Recolector de vuelos
+ skysync-event-store-builder/ # Almacenamiento de eventos
+ skysync-business-unit/      # Procesamiento y explotacin
 ```
 
-## 🚀 Instrucciones para compilar y ejecutar
+##  Datos de ejemplo
+- **Event Store**: `eventstore/sample/YYYYMMDD.events` (muestra del 15/05/2025).
+- **Datamart**: `datamart/sample/clima_datamart.db`, `vuelos_datamart.db`.
 
-Desde la raíz del proyecto (donde está el `pom.xml` principal):
+##  Instrucciones para compilar y ejecutar
 
-```bash
-# 1. Compilar todo el sistema
-mvn clean install
+1. **Requisitos previos**:
+    - Instala ActiveMQ: [Descargar](https://activemq.apache.org/components/classic/download/) y ejecuta `bin/activemq start`.
+    - Configura `OPENWEATHER_API_KEY` y `AVIATIONSTACK_API_KEY` in `skysync-business-unit/src/main/resources/application.properties`.
 
-# 2. Lanzar el Event Store
-cd skysync-event-store-builder
-mvn exec:java -Dexec.mainClass="com.skysync.eventstore.Main"
+2. **Compilar** (desde la raz):
+   ```bash
+   mvn clean install
+   ```
 
-# 3. Lanzar el procesamiento en tiempo real
-cd ../skysync-business-unit
-mvn exec:java -Dexec.mainClass="com.skysync.adapters.in.cli.SkySync"  # y seleccionar opción 6
+3. **Lanzar Event Store**:
+   ```bash
+   cd skysync-event-store-builder
+   mvn exec:java -Dexec.mainClass="com.skysync.eventstore.Main"
+   ```
 
-# 4. Ejecutar los feeders
-cd ../skysync-feeder-weather
-mvn exec:java -Dexec.mainClass="com.skysync.feederweather.Main"
+4. **Lanzar Business Unit**:
+   ```bash
+   cd ../skysync-business-unit
+   mvn exec:java -Dexec.mainClass="com.skysync.adapters.in.cli.SkySync"  # Opcin 6 para tiempo real
+   ```
 
-cd ../skysync-feeder-flights
-mvn exec:java -Dexec.mainClass="com.skysync.feederflights.Main"
+5. **Ejecutar Feeders**:
+   ```bash
+   cd ../skysync-feeder-weather
+   mvn exec:java -Dexec.mainClass="com.skysync.feederweather.Main"
+   cd ../skysync-feeder-flights
+   mvn exec:java -Dexec.mainClass="com.skysync.feederflights.Main"
+   ```
 
-# 5. Iniciar API REST (opcional)
-cd ../skysync-business-unit
-mvn exec:java -Dexec.mainClass="com.skysync.adapters.in.rest.SkySyncRestServer"
-```
+6. **Iniciar API REST** (opcional):
+   ```bash
+   cd ../skysync-business-unit
+   mvn exec:java -Dexec.mainClass="com.skysync.adapters.in.rest.SkySyncRestServer"
+   ```
 
-⚠️ Asegúrate de tener configuradas las siguientes variables de entorno o en `application.properties`:
+Archivos de configuracin estn en `*/src/main/resources/`.
 
-- `OPENWEATHER_API_KEY`
-- `AVIATIONSTACK_API_KEY`
-
-## 📌 Ejemplos de uso
-
-### CLI (SkySync.java)
-
-- Opción `2`: Generar informe diario
-- Opción `3`: Predecir probabilidad de cancelación por clima
-- Opción `7` a `11`: Análisis climáticos y alertas combinadas
 
 ### REST API
+URL para el UI: `http://localhost:7000/ui/SkySyncWeb.html`
 
-Base URL: `http://localhost:7000`
 
-```
-GET /informe?fecha=2025-05-15
-GET /prediccion?codigo=TFN
-GET /clima/promedio
-GET /clima/extremos
-GET /vuelos/estado
-GET /alerta/combinada
-```
-
-### Archivos generados
-
-- `eventstore/prediction.Weather/feederA/YYYYMMDD.events`
-- `eventstore/prediction.Flight/feederB/YYYYMMDD.events`
-
-### Bases de datos
-
-- `clima_datamart.db`
-- `vuelos_datamart.db`
-
-## 👨‍💻 Autor
-
-Desarrollado por **Raúl Mendoza**  **Yain Estrada**
-Grado en Ciencia e Ingeniería de Datos – Proyecto académico 2025
+##  Autores
+Desarrollado por **Ral Mendoza Peña** y **Yain Estrada Domínguez**.  
+Grado en Ciencia e Ingeniera de Datos  Proyecto acadmico 2025. Ingeniería de Datos – Proyecto académico 2025.

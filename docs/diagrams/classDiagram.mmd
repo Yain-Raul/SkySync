@@ -1,60 +1,69 @@
-flowchart TD
+graph TD
 
-%% === Fuentes externas ===
-    OWM[OpenWeatherMap API]:::api
-    AVS[AviationStack API]:::api
+%% --- CORE ---
+    subgraph skysync-core
+        FlightEvent((FlightEvent))
+        WeatherEvent((WeatherEvent))
+        Vuelo(Vuelo)
+        Clima(Clima)
 
-%% === Recolectores ===
-    subgraph Recolección de Datos
-        CC[ClimaCollector] --> OWM
-        DC[DataCollector] --> AVS
+        VueloRepository[[<<interface>> VueloRepository]]
+        ClimaRepository[[<<interface>> ClimaRepository]]
+        ClimaPorCodigoPort[[<<interface>> ClimaPorCodigoPort]]
+        PredecirCancelacionUseCase[[<<interface>> PredecirCancelacionUseCase]]
+
+        VueloRepository -->|manages| Vuelo
+        ClimaRepository -->|manages| Clima
+        ClimaPorCodigoPort -->|queries| Clima
+        PredecirCancelacionUseCase -->|uses| Vuelo
+        PredecirCancelacionUseCase -->|uses| Clima
     end
 
-%% === Publicadores ===
-    subgraph Publicación de eventos
-        CC --> WP[WeatherPublisher]:::publisher
-        DC --> FP[FlightPublisher]:::publisher
-        WP --> TopicWeather["ActiveMQ Topic: prediction.Weather"]:::broker
-        FP --> TopicFlight["ActiveMQ Topic: prediction.Flight"]:::broker
+%% --- BROKER ---
+    subgraph ActiveMQ
+        Broker((Broker))
     end
 
-%% === EventStoreBuilder ===
-    subgraph Event Store
-        TopicWeather --> ESB[EventStoreBuilder]:::consumer
-        ESB --> ArchivoClima["/eventstore/prediction.Weather/YYYYMMDD.events"]:::file
+%% --- FEEDERS ---
+    subgraph skysync-feeder-weather
+        WeatherPublisher(WeatherPublisher)
+        WeatherPublisher -->|publishes to| Broker
     end
 
-%% === Business Unit ===
-    subgraph Business Unit
-        TopicWeather --> BU[BusinessUnit]:::consumer
-        TopicFlight --> BU
-        BU --> DB[(SQLite: datamart.db)]:::db
+    subgraph skysync-feeder-flights
+        FlightPublisher(FlightPublisher)
+        FlightPublisher -->|publishes to| Broker
     end
 
-%% === Inserción directa desde Collectors (modo 1, sin eventos) ===
-    CC --> DB
-    DC --> DB
-
-%% === Carga histórica ===
-    subgraph Carga de eventos históricos
-        ArchivoClima --> BU
-        ArchivoVuelos["/eventstore/prediction.Flight/YYYYMMDD.events"]:::file --> BU
+%% --- EVENT STORE BUILDER ---
+    subgraph skysync-event-store-builder
+        EventStoreBrokerAdapter(EventStoreBrokerAdapter)
+        Broker -->|consumes from| EventStoreBrokerAdapter
     end
 
-%% === Análisis y consultas ===
-    subgraph Módulos de análisis
-        DB --> Informe[InformeGenerator]:::logic
-        DB --> Prediccion[PredictiveEngine]:::logic
-        DB --> Resumen[Resumen Clima/Vuelos]:::logic
-        DB --> AlertaClima[Condiciones extremas]:::logic
-        DB --> AlertaCombinada[Alerta combinada clima + vuelos]:::logic
-    end
+%% --- BUSINESS UNIT ---
+    subgraph skysync-business-unit
+        SkySyncRestServer(SkySyncRestServer)
+        SkySync(SkySync)
+        BusinessUnitEventAdapter(BusinessUnitEventAdapter)
+        SQLiteClimaRepository(SQLiteClimaRepository)
+        SQLiteVueloRepository(SQLiteVueloRepository)
+        PredecirCancelacionService(PredecirCancelacionService)
+        GenerarInformeService(GenerarInformeService)
 
-%% === Estilos ===
-    classDef api fill:#d5e8d4,stroke:#82b366,color:#000;
-    classDef publisher fill:#e1d5e7,stroke:#9673a6,color:#000;
-    classDef broker fill:#fff2cc,stroke:#d6b656,color:#000;
-    classDef consumer fill:#f8cecc,stroke:#b85450,color:#000;
-    classDef db fill:#dae8fc,stroke:#6c8ebf,color:#000;
-    classDef logic fill:#f5f5f5,stroke:#666,color:#333;
-    classDef file fill:#eeeeee,stroke:#aaa,color:#333;
+        SkySyncRestServer -->|uses| BusinessUnitEventAdapter
+        SkySync -->|uses| BusinessUnitEventAdapter
+
+        BusinessUnitEventAdapter -->|accesses| SQLiteClimaRepository
+        BusinessUnitEventAdapter -->|accesses| SQLiteVueloRepository
+
+        BusinessUnitEventAdapter -->|delegates to| PredecirCancelacionService
+        BusinessUnitEventAdapter -->|delegates to| GenerarInformeService
+
+        SQLiteClimaRepository -->|implements| ClimaRepository
+        SQLiteVueloRepository -->|implements| VueloRepository
+        PredecirCancelacionService -->|implements| PredecirCancelacionUseCase
+        GenerarInformeService -->|implements| GenerarInformeUseCase
+
+        Broker -->|consumes from| BusinessUnitEventAdapter
+    end
