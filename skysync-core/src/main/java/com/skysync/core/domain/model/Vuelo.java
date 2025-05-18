@@ -7,16 +7,20 @@ public class Vuelo {
 	private String aeropuertoSalidaIATA;
 	private String aeropuertoLlegada;
 	private String estado;
+	private String fecha; // Added field for date (e.g., "2025-05-18")
+	private String razonRetraso; // Optional field for delay reason
 
 	// Constructor completo
 	public Vuelo(String numeroVuelo, String aerolinea, String aeropuertoSalida, String aeropuertoSalidaIATA,
-				 String aeropuertoLlegada, String estado) {
+				 String aeropuertoLlegada, String estado, String fecha, String razonRetraso) {
 		this.numeroVuelo = numeroVuelo;
 		this.aerolinea = aerolinea;
 		this.aeropuertoSalida = aeropuertoSalida;
 		this.aeropuertoSalidaIATA = aeropuertoSalidaIATA;
 		this.aeropuertoLlegada = aeropuertoLlegada;
 		this.estado = estado;
+		this.fecha = fecha;
+		this.razonRetraso = razonRetraso;
 	}
 
 	// Constructor vacío (útil para carga desde base de datos)
@@ -48,6 +52,14 @@ public class Vuelo {
 		return estado;
 	}
 
+	public String getFecha() {
+		return fecha;
+	}
+
+	public String getRazonRetraso() {
+		return razonRetraso;
+	}
+
 	// Setters
 	public void setNumeroVuelo(String numeroVuelo) {
 		this.numeroVuelo = numeroVuelo;
@@ -73,14 +85,25 @@ public class Vuelo {
 		this.estado = estado;
 	}
 
+	public void setFecha(String fecha) {
+		this.fecha = fecha;
+	}
+
+	public void setRazonRetraso(String razonRetraso) {
+		this.razonRetraso = razonRetraso;
+	}
+
 	@Override
 	public String toString() {
 		return "Vuelo{" +
 				"numeroVuelo='" + numeroVuelo + '\'' +
 				", aerolinea='" + aerolinea + '\'' +
 				", aeropuertoSalida='" + aeropuertoSalida + '\'' +
+				", aeropuertoSalidaIATA='" + aeropuertoSalidaIATA + '\'' +
 				", aeropuertoLlegada='" + aeropuertoLlegada + '\'' +
 				", estado='" + estado + '\'' +
+				", fecha='" + fecha + '\'' +
+				", razonRetraso='" + razonRetraso + '\'' +
 				'}';
 	}
 }

@@ -15,6 +15,7 @@ public class BusinessUnitEventAdapter implements MessageListener {
 	private final EventoClimaListener climaListener;
 	private final EventoVueloListener vueloListener;
 
+	private volatile boolean running = false;
 	private final Gson gson = new Gson();
 
 	public BusinessUnitEventAdapter(EventoClimaListener climaListener, EventoVueloListener vueloListener) {
@@ -66,5 +67,12 @@ public class BusinessUnitEventAdapter implements MessageListener {
 				e.printStackTrace();
 			}
 		}
+	}
+	public boolean isRunning() {
+		return running;
+	}
+
+	public void stop() {
+		running = false;
 	}
 }
